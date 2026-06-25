@@ -1,5 +1,6 @@
 const User = require("../model/userModel");
 const asyncHandler = require("express-async-handler");
+const jwt = require("jsonwebtoken");
 
 const register = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
@@ -24,6 +25,48 @@ const register = asyncHandler(async (req, res) => {
   });
 });
 
+const login = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
 
+  if (!email || !password) {
+    const error = new Error("Email and Password required. ");
+    error.status = 400;
+    throw error;
+  }
 
-module.exports = { register };
+  const user = await User.findOne({ email }).select("+password");
+
+  if (!user) {
+    const error = new Error("Invalid credentials. ");
+    error.status = 401;
+    throw error;
+  }
+
+  const isMatch = await user.comparePassword(password)
+
+  if (!isMatch) {
+    const error = new Error("Invalid credentials. ");
+    error.status = 401;
+    throw error;
+  }
+
+  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+    expiresIn: "7d",
+  });
+
+  const cookieAge = 7 * 24 * 60 * 60 * 1000;
+
+  res.cookie("token", token, {
+    maxAge: cookieAge,
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Login successful. ",
+  });
+});
+
+module.exports = { register, login };
