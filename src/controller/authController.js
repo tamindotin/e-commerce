@@ -1,6 +1,8 @@
 const User = require("../model/userModel");
 const asyncHandler = require("express-async-handler");
 const jwt = require("jsonwebtoken");
+const generateOtp = require("../utils/otpGenerator");
+const sendOtp = require("../helper/sendOtp");
 
 const register = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
@@ -17,11 +19,23 @@ const register = asyncHandler(async (req, res) => {
     throw error;
   }
 
-  await User.create({ name, email, password });
+  const otp = await generateOtp();
+  console.log(otp)
+  const isMail = sendOtp(email, name, otp);
+
+  if (!isMail) {
+    const error = new Error("Internal server error. ");
+    error.status = 500;
+    throw error;
+  }
+
+  const otpExpiresAt = 5 * 60 * 1000
+
+  await User.create({ name, email, password, otp, otpExpiresAt });
 
   res.status(201).json({
     success: true,
-    message: "Account created. You can login with this credentials. ",
+    message: "Account created. OTP sent for account verification. ",
   });
 });
 
@@ -42,7 +56,13 @@ const login = asyncHandler(async (req, res) => {
     throw error;
   }
 
-  const isMatch = await user.comparePassword(password)
+  if (!user.verified){
+    const error = new Error("Account is not verified. ");
+    error.status = 400;
+    throw error;
+  }
+
+  const isMatch = await user.comparePassword(password);
 
   if (!isMatch) {
     const error = new Error("Invalid credentials. ");
@@ -69,4 +89,47 @@ const login = asyncHandler(async (req, res) => {
   });
 });
 
-module.exports = { register, login };
+const verifyAccount = asyncHandler(async (req, res) => {
+  const { email, otp } = req.body;
+
+  const user = await User.findOne({ email }).select("+otp +otpExpiresAt");
+
+  if (!user) {
+    const error = new Error("No account is associated with this email. ");
+    error.status = 401;
+    throw error;
+  }
+
+  if (user.verified) {
+    const error = new Error("Account is already verified. ");
+    error.status = 400;
+    throw error;
+  }
+
+  const isValid = await user.compareOtp(otp)
+
+  if (!isValid) {
+    const error = new Error("Invalid OTP. ");
+    error.status = 400;
+    throw error;
+  }
+
+  if (user.otpExpiresAt > Date.now()) {
+    const error = new Error("OTP is expired. ");
+    error.status = 400;
+    throw error;
+  }
+
+  user.otp = null;
+  user.otpExpiresAt = null;
+  user.verified = true;
+
+  await user.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Account verified successfully. ",
+  });
+});
+
+module.exports = { register, login, verifyAccount };
