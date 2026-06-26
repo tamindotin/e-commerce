@@ -20,7 +20,6 @@ const register = asyncHandler(async (req, res) => {
   }
 
   const otp = await generateOtp();
-  console.log(otp)
   const isMail = sendOtp(email, name, otp);
 
   if (!isMail) {
@@ -29,7 +28,7 @@ const register = asyncHandler(async (req, res) => {
     throw error;
   }
 
-  const otpExpiresAt = 5 * 60 * 1000
+  const otpExpiresAt = 5 * 60 * 1000;
 
   await User.create({ name, email, password, otp, otpExpiresAt });
 
@@ -56,7 +55,7 @@ const login = asyncHandler(async (req, res) => {
     throw error;
   }
 
-  if (!user.verified){
+  if (!user.verified) {
     const error = new Error("Account is not verified. ");
     error.status = 400;
     throw error;
@@ -106,7 +105,7 @@ const verifyAccount = asyncHandler(async (req, res) => {
     throw error;
   }
 
-  const isValid = await user.compareOtp(otp)
+  const isValid = await user.compareOtp(otp);
 
   if (!isValid) {
     const error = new Error("Invalid OTP. ");
@@ -132,4 +131,37 @@ const verifyAccount = asyncHandler(async (req, res) => {
   });
 });
 
-module.exports = { register, login, verifyAccount };
+const resendOtp = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    const error = new Error("No account is associated with this email. ");
+    error.status = 401;
+    throw error;
+  }
+
+  const otp = await generateOtp();
+  user.otp = otp;
+
+  const isMail = sendOtp(email, user.name, otp);
+
+  if (!isMail) {
+    const error = new Error("Internal server error. ");
+    error.status = 500;
+    throw error;
+  }
+
+  const otpExpiresAt = 5 * 60 * 1000;
+  user.otpExpiresAt = otpExpiresAt;
+
+  await user.save();
+
+  res.status(200).json({
+    success: true,
+    message: "OTP sent to your email. ",
+  });
+});
+
+module.exports = { register, login, verifyAccount, resendOtp };
