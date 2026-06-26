@@ -25,7 +25,7 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: [true, "Password is required. "],
-      minLength: [8, "Length must be 8 character length. "],
+      minLength: [8, "Password must be at least 8 characters long."],
       select: false,
     },
 
@@ -75,11 +75,23 @@ const userSchema = new mongoose.Schema(
         },
       },
     ],
+
+    otp: {
+      type: String,
+      default: null,
+      select: false
+    },
+
+    otpExpiresAt: {
+      type: Date,
+      default: null,
+      select: false
+    },
   },
   { timestamps: true },
 );
 
-userSchema.pre("save", async function (next) {
+userSchema.pre("save", async function () {
   if (!this.isModified("password")) return;
 
   const hashedPass = await bcrypt.hash(this.password, 10);
@@ -87,8 +99,20 @@ userSchema.pre("save", async function (next) {
   this.password = hashedPass;
 });
 
+userSchema.pre("save", async function () {
+  if (!this.isModified("otp") || !this.otp) return;
+
+  const hashedOtp = await bcrypt.hash(this.otp, 10);
+
+  this.otp = hashedOtp;
+});
+
 userSchema.methods.comparePassword = async function (password) {
   return bcrypt.compare(password, this.password);
+};
+
+userSchema.methods.compareOtp = async function (otp) {
+  return bcrypt.compare(otp, this.otp);
 };
 
 const User = mongoose.model("User", userSchema);
