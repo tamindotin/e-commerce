@@ -213,4 +213,51 @@ const forgotPassword = asyncHandler(async (req, res) => {
   });
 });
 
-module.exports = { register, login, verifyAccount, resendOtp, forgotPassword };
+const resetPassword = asyncHandler(async (req, res) => {
+  const { email, otp, password } = req.body;
+
+  const user = await User.findOne({ email }).select(
+    "+otp +otpExpiresAt +password",
+  );
+
+  if (!user) {
+    const error = new Error("No account is associated with this email. ");
+    error.status = 401;
+    throw error;
+  }
+
+  const isValid = await user.compareOtp(otp);
+
+  if (!isValid) {
+    const error = new Error("Invalid OTP. ");
+    error.status = 400;
+    throw error;
+  }
+
+  if (user.otpExpiresAt > Date.now()) {
+    const error = new Error("OTP is expired. ");
+    error.status = 400;
+    throw error;
+  }
+
+  if (await user.comparePassword(password)) {
+    const error = new Error(
+      "Current password and new password cannot be same. ",
+    );
+    error.status = 400;
+    throw error;
+  }
+
+  user.password = password;
+  user.otp = null;
+  user.otpExpiresAt = null;
+
+  await user.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Password changed successfully. ",
+  });
+});
+
+module.exports = { register, login, verifyAccount, resendOtp, forgotPassword, resetPassword };
