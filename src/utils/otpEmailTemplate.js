@@ -51,7 +51,7 @@ const otpEmailTemplate = (name, otp) => {
                   </span>
                 </div>
 
-                <p>This OTP is valid for <strong>10 minutes</strong>.</p>
+                <p>This OTP is valid for <strong>5 minutes</strong>.</p>
 
                 <p>
                   If you didn't request this verification, you can safely ignore
