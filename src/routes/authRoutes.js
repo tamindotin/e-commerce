@@ -5,7 +5,9 @@ const {
   resendOtp,
   forgotPassword,
   resetPassword,
+  changePassword,
 } = require("../controller/authController");
+const auth = require("../middleware/authMiddleware");
 
 const router = require("express").Router();
 
@@ -15,5 +17,6 @@ router.post("/verify-account", verifyAccount);
 router.post("/resend-otp", resendOtp);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
+router.post("/change-password", auth, changePassword);
 
 module.exports = router;
