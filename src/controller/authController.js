@@ -2,7 +2,11 @@ const User = require("../model/userModel");
 const asyncHandler = require("express-async-handler");
 const jwt = require("jsonwebtoken");
 const generateOtp = require("../utils/otpGenerator");
-const sendOtp = require("../helper/sendOtp");
+const sendEmail = require("../helper/sendEmail");
+const otpEmailTemplate = require("../utils/otpEmailTemplate");
+const resetPasswordOtpTemplate = require("../utils/resetPasswordOtpTemplate");
+
+const otpExpireMin = 5;
 
 const register = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
@@ -20,7 +24,11 @@ const register = asyncHandler(async (req, res) => {
   }
 
   const otp = await generateOtp();
-  const isMail = sendOtp(email, name, otp);
+  const isMail = sendEmail(
+    email,
+    "Account verification OTP",
+    otpEmailTemplate(name, otp),
+  );
 
   if (!isMail) {
     const error = new Error("Internal server error. ");
@@ -28,7 +36,7 @@ const register = asyncHandler(async (req, res) => {
     throw error;
   }
 
-  const otpExpiresAt = 5 * 60 * 1000;
+  const otpExpiresAt = otpExpireMin * 60 * 1000;
 
   await User.create({ name, email, password, otp, otpExpiresAt });
 
@@ -145,7 +153,11 @@ const resendOtp = asyncHandler(async (req, res) => {
   const otp = await generateOtp();
   user.otp = otp;
 
-  const isMail = sendOtp(email, user.name, otp);
+  const isMail = sendEmail(
+    email,
+    "Account verification OTP",
+    otpEmailTemplate(user.name, otp),
+  );
 
   if (!isMail) {
     const error = new Error("Internal server error. ");
@@ -153,7 +165,7 @@ const resendOtp = asyncHandler(async (req, res) => {
     throw error;
   }
 
-  const otpExpiresAt = 5 * 60 * 1000;
+  const otpExpiresAt = otpExpireMin * 60 * 1000;
   user.otpExpiresAt = otpExpiresAt;
 
   await user.save();
@@ -164,4 +176,41 @@ const resendOtp = asyncHandler(async (req, res) => {
   });
 });
 
-module.exports = { register, login, verifyAccount, resendOtp };
+const forgotPassword = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    const error = new Error("No account is associated with this email. ");
+    error.status = 400;
+    throw error;
+  }
+
+  const otp = await generateOtp();
+  user.otp = otp;
+
+  const isMail = sendEmail(
+    email,
+    "Password reset OTP",
+    resetPasswordOtpTemplate(user.name, otp),
+  );
+
+  if (!isMail) {
+    const error = new Error("Internal server error. ");
+    error.status = 500;
+    throw error;
+  }
+
+  const otpExpiresAt = otpExpireMin * 60 * 1000;
+  user.otpExpiresAt = otpExpiresAt;
+
+  await user.save();
+
+  res.status(200).json({
+    success: true,
+    message: "OTP sent to your email. ",
+  });
+});
+
+module.exports = { register, login, verifyAccount, resendOtp, forgotPassword };
