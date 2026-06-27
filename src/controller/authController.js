@@ -285,6 +285,19 @@ const changePassword = asyncHandler(async (req, res) => {
   });
 });
 
+const logout = asyncHandler(async (req, res) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Logout successfully. ",
+  });
+});
+
 module.exports = {
   register,
   login,
@@ -293,4 +306,5 @@ module.exports = {
   forgotPassword,
   resetPassword,
   changePassword,
+  logout
 };
