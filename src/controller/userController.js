@@ -54,4 +54,22 @@ const addAddress = asyncHandler(async (req, res) => {
   });
 });
 
-module.exports = { getAllAddresses, addAddress };
+const setDefaultAddress = asyncHandler(async (req, res) => {
+  const id = req.user
+  const addressId = req.params.id
+
+  const user = await User.findById(id)
+
+  user.addresses.forEach(address => {
+    address.isDefault = false
+  });
+
+  user.addresses.id(addressId).isDefault = true;
+
+  res.status(200).json({
+    success: true,
+    addresses: user.addresses
+  })
+})
+
+module.exports = { getAllAddresses, addAddress, setDefaultAddress };
