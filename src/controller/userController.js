@@ -72,10 +72,46 @@ const setDefaultAddress = asyncHandler(async (req, res) => {
     throw error;
   }
 
+  address.isDefault = true
+
+  await user.save()
+
   res.status(200).json({
     success: true,
     addresses: user.addresses,
   });
 });
 
-module.exports = { getAllAddresses, addAddress, setDefaultAddress };
+const deleteAddress = asyncHandler(async(req, res) => {
+  const id = req.user
+  const addressId = req.params.id
+
+  const user = await User.findById(id)
+
+  const address = user.addresses.id(addressId)
+
+  if (!address) {
+    const error = new Error("No address found. ");
+    error.status = 400;
+    throw error;
+  }
+
+  if(address.isDefault){
+    const error = new Error("Cannot delete default address. ");
+    error.status = 400;
+    throw error;
+  }
+
+  address.deleteOne()
+
+  await user.save()
+
+  res.status(200).json({
+    success: true,
+    message: "Address deleted. ",
+    addresses: user.addresses,
+  });
+
+})
+
+module.exports = { getAllAddresses, addAddress, setDefaultAddress, deleteAddress };
