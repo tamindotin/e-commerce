@@ -72,9 +72,9 @@ const setDefaultAddress = asyncHandler(async (req, res) => {
     throw error;
   }
 
-  address.isDefault = true
+  address.isDefault = true;
 
-  await user.save()
+  await user.save();
 
   res.status(200).json({
     success: true,
@@ -82,13 +82,13 @@ const setDefaultAddress = asyncHandler(async (req, res) => {
   });
 });
 
-const deleteAddress = asyncHandler(async(req, res) => {
-  const id = req.user
-  const addressId = req.params.id
+const deleteAddress = asyncHandler(async (req, res) => {
+  const id = req.user;
+  const addressId = req.params.id;
 
-  const user = await User.findById(id)
+  const user = await User.findById(id);
 
-  const address = user.addresses.id(addressId)
+  const address = user.addresses.id(addressId);
 
   if (!address) {
     const error = new Error("No address found. ");
@@ -96,32 +96,31 @@ const deleteAddress = asyncHandler(async(req, res) => {
     throw error;
   }
 
-  if(address.isDefault){
+  if (address.isDefault) {
     const error = new Error("Cannot delete default address. ");
     error.status = 400;
     throw error;
   }
 
-  address.deleteOne()
+  address.deleteOne();
 
-  await user.save()
+  await user.save();
 
   res.status(200).json({
     success: true,
     message: "Address deleted. ",
     addresses: user.addresses,
   });
+});
 
-})
-
-const updateAddress = asyncHandler(async(req, res) => {
+const updateAddress = asyncHandler(async (req, res) => {
   const id = req.user;
-  const addressId = req.params;
+  const addressId = req.params.id;
 
   const { label, street, city, state, pincode, country } = req.body;
 
-  const  user = User.findById(id)
-  const address = user.addresses.id(addressId)
+  const user = await User.findById(id);
+  const address = user.addresses.id(addressId);
 
   if (!address) {
     const error = new Error("No address found. ");
@@ -129,15 +128,34 @@ const updateAddress = asyncHandler(async(req, res) => {
     throw error;
   }
 
-  Object.assign(address, req.body)
+  const allowedFields = [
+    "label",
+    "street",
+    "city",
+    "state",
+    "pincode",
+    "country",
+  ];
 
-  await user.save()
+  allowedFields.forEach((field) => {
+    if (req.body[field] !== undefined) {
+      address[field] = req.body[field];
+    }
+  });
+
+  await user.save();
 
   return res.status(200).json({
     success: true,
     message: "Address updated. ",
-    addresses: user.addresses
-  })
-})
+    addresses: user.addresses,
+  });
+});
 
-module.exports = { getAllAddresses, addAddress, setDefaultAddress, deleteAddress, updateAddress };
+module.exports = {
+  getAllAddresses,
+  addAddress,
+  setDefaultAddress,
+  deleteAddress,
+  updateAddress,
+};
