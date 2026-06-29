@@ -57,6 +57,23 @@ const resetPasswordSchema = joi.object({
 
 const changePasswordSchema = joi.object({
   password: password,
+  newPassword: joi
+    .string()
+    .min(8)
+    .max(32)
+    .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).+$/)
+    .required()
+    .messages({
+      "string.pattern.base":
+        "Password must contain uppercase, lowercase, number and special character.",
+    })
+    .invalid(joi.ref("password"))
+    .messages({
+      "any.invalid": "Current password and new password cannot be same.",
+    }),
+  confirmPassword: joi.any().valid(joi.ref("newPassword")).required().messages({
+    "any.only": "Passwords do not match.",
+  }),
 });
 
 module.exports = {
