@@ -24,7 +24,7 @@ const register = asyncHandler(async (req, res) => {
   }
 
   const otp = await generateOtp();
-  const isMail = sendEmail(
+  const isMail = await sendEmail(
     email,
     "Account verification OTP",
     otpEmailTemplate(name, otp),
@@ -36,7 +36,7 @@ const register = asyncHandler(async (req, res) => {
     throw error;
   }
 
-  const otpExpiresAt = otpExpireMin * 60 * 1000;
+  const otpExpiresAt = Date.now() + otpExpireMin * 60 * 1000;
 
   await User.create({ name, email, password, otp, otpExpiresAt });
 
@@ -121,7 +121,7 @@ const verifyAccount = asyncHandler(async (req, res) => {
     throw error;
   }
 
-  if (user.otpExpiresAt > Date.now()) {
+  if (user.otpExpiresAt < Date.now()) {
     const error = new Error("OTP is expired. ");
     error.status = 410;
     throw error;
@@ -153,7 +153,7 @@ const resendOtp = asyncHandler(async (req, res) => {
   const otp = await generateOtp();
   user.otp = otp;
 
-  const isMail = sendEmail(
+  const isMail = await sendEmail(
     email,
     "Account verification OTP",
     otpEmailTemplate(user.name, otp),
@@ -165,7 +165,7 @@ const resendOtp = asyncHandler(async (req, res) => {
     throw error;
   }
 
-  const otpExpiresAt = otpExpireMin * 60 * 1000;
+  const otpExpiresAt = Date.now() + otpExpireMin * 60 * 1000;
   user.otpExpiresAt = otpExpiresAt;
 
   await user.save();
@@ -190,7 +190,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
   const otp = await generateOtp();
   user.otp = otp;
 
-  const isMail = sendEmail(
+  const isMail = await sendEmail(
     email,
     "Password reset OTP",
     resetPasswordOtpTemplate(user.name, otp),
@@ -202,7 +202,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
     throw error;
   }
 
-  const otpExpiresAt = otpExpireMin * 60 * 1000;
+  const otpExpiresAt = Date.now() + otpExpireMin * 60 * 1000;
   user.otpExpiresAt = otpExpiresAt;
 
   await user.save();
@@ -226,6 +226,12 @@ const resetPassword = asyncHandler(async (req, res) => {
     throw error;
   }
 
+  if (!user.verified) {
+    const error = new Error("Account is not verified. ");
+    error.status = 403;
+    throw error;
+  }
+
   const isValid = await user.compareOtp(otp);
 
   if (!isValid) {
@@ -234,7 +240,7 @@ const resetPassword = asyncHandler(async (req, res) => {
     throw error;
   }
 
-  if (user.otpExpiresAt > Date.now()) {
+  if (user.otpExpiresAt < Date.now()) {
     const error = new Error("OTP is expired. ");
     error.status = 400;
     throw error;
