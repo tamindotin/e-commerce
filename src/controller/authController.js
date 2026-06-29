@@ -19,12 +19,12 @@ const register = asyncHandler(async (req, res) => {
 
   if (await User.findOne({ email })) {
     const error = new Error("An account with this email already exists. ");
-    error.status = 400;
+    error.status = 409;
     throw error;
   }
 
   const otp = await generateOtp();
-  const isMail = sendEmail(
+  const isMail = await sendEmail(
     email,
     "Account verification OTP",
     otpEmailTemplate(name, otp),
@@ -36,7 +36,7 @@ const register = asyncHandler(async (req, res) => {
     throw error;
   }
 
-  const otpExpiresAt = otpExpireMin * 60 * 1000;
+  const otpExpiresAt = Date.now() + otpExpireMin * 60 * 1000;
 
   await User.create({ name, email, password, otp, otpExpiresAt });
 
@@ -65,7 +65,7 @@ const login = asyncHandler(async (req, res) => {
 
   if (!user.verified) {
     const error = new Error("Account is not verified. ");
-    error.status = 400;
+    error.status = 403;
     throw error;
   }
 
@@ -103,13 +103,13 @@ const verifyAccount = asyncHandler(async (req, res) => {
 
   if (!user) {
     const error = new Error("No account is associated with this email. ");
-    error.status = 401;
+    error.status = 404;
     throw error;
   }
 
   if (user.verified) {
     const error = new Error("Account is already verified. ");
-    error.status = 400;
+    error.status = 409;
     throw error;
   }
 
@@ -121,9 +121,9 @@ const verifyAccount = asyncHandler(async (req, res) => {
     throw error;
   }
 
-  if (user.otpExpiresAt > Date.now()) {
+  if (user.otpExpiresAt < Date.now()) {
     const error = new Error("OTP is expired. ");
-    error.status = 400;
+    error.status = 410;
     throw error;
   }
 
@@ -146,14 +146,14 @@ const resendOtp = asyncHandler(async (req, res) => {
 
   if (!user) {
     const error = new Error("No account is associated with this email. ");
-    error.status = 401;
+    error.status = 404;
     throw error;
   }
 
   const otp = await generateOtp();
   user.otp = otp;
 
-  const isMail = sendEmail(
+  const isMail = await sendEmail(
     email,
     "Account verification OTP",
     otpEmailTemplate(user.name, otp),
@@ -165,7 +165,7 @@ const resendOtp = asyncHandler(async (req, res) => {
     throw error;
   }
 
-  const otpExpiresAt = otpExpireMin * 60 * 1000;
+  const otpExpiresAt = Date.now() + otpExpireMin * 60 * 1000;
   user.otpExpiresAt = otpExpiresAt;
 
   await user.save();
@@ -183,14 +183,14 @@ const forgotPassword = asyncHandler(async (req, res) => {
 
   if (!user) {
     const error = new Error("No account is associated with this email. ");
-    error.status = 400;
+    error.status = 404;
     throw error;
   }
 
   const otp = await generateOtp();
   user.otp = otp;
 
-  const isMail = sendEmail(
+  const isMail = await sendEmail(
     email,
     "Password reset OTP",
     resetPasswordOtpTemplate(user.name, otp),
@@ -202,7 +202,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
     throw error;
   }
 
-  const otpExpiresAt = otpExpireMin * 60 * 1000;
+  const otpExpiresAt = Date.now() + otpExpireMin * 60 * 1000;
   user.otpExpiresAt = otpExpiresAt;
 
   await user.save();
@@ -222,7 +222,13 @@ const resetPassword = asyncHandler(async (req, res) => {
 
   if (!user) {
     const error = new Error("No account is associated with this email. ");
-    error.status = 401;
+    error.status = 404;
+    throw error;
+  }
+
+  if (!user.verified) {
+    const error = new Error("Account is not verified. ");
+    error.status = 403;
     throw error;
   }
 
@@ -234,7 +240,7 @@ const resetPassword = asyncHandler(async (req, res) => {
     throw error;
   }
 
-  if (user.otpExpiresAt > Date.now()) {
+  if (user.otpExpiresAt < Date.now()) {
     const error = new Error("OTP is expired. ");
     error.status = 400;
     throw error;
@@ -263,19 +269,19 @@ const resetPassword = asyncHandler(async (req, res) => {
 const changePassword = asyncHandler(async (req, res) => {
   const id = req.user;
 
-  const { password } = req.body;
+  const { password, newPassword } = req.body;
 
   const user = await User.findById(id).select("+password");
 
-  if (await user.comparePassword(password)) {
+  if (!await user.comparePassword(password)) {
     const error = new Error(
-      "Current password and new password cannot be same. ",
+      "Invalid password. ",
     );
-    error.status = 400;
+    error.status = 401;
     throw error;
   }
 
-  user.password = password;
+  user.password = newPassword;
 
   await user.save();
 

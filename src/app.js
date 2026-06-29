@@ -10,10 +10,11 @@ const app = express();
 
 app.use(express.json());
 app.use(cors());
-app.use(errorHandler);
 app.use(cookieParser());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
+
+app.use(errorHandler)
 
 module.exports = app;
