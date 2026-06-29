@@ -19,7 +19,7 @@ const register = asyncHandler(async (req, res) => {
 
   if (await User.findOne({ email })) {
     const error = new Error("An account with this email already exists. ");
-    error.status = 400;
+    error.status = 409;
     throw error;
   }
 
@@ -65,7 +65,7 @@ const login = asyncHandler(async (req, res) => {
 
   if (!user.verified) {
     const error = new Error("Account is not verified. ");
-    error.status = 400;
+    error.status = 403;
     throw error;
   }
 
@@ -103,13 +103,13 @@ const verifyAccount = asyncHandler(async (req, res) => {
 
   if (!user) {
     const error = new Error("No account is associated with this email. ");
-    error.status = 401;
+    error.status = 404;
     throw error;
   }
 
   if (user.verified) {
     const error = new Error("Account is already verified. ");
-    error.status = 400;
+    error.status = 409;
     throw error;
   }
 
@@ -123,7 +123,7 @@ const verifyAccount = asyncHandler(async (req, res) => {
 
   if (user.otpExpiresAt > Date.now()) {
     const error = new Error("OTP is expired. ");
-    error.status = 400;
+    error.status = 410;
     throw error;
   }
 
@@ -146,7 +146,7 @@ const resendOtp = asyncHandler(async (req, res) => {
 
   if (!user) {
     const error = new Error("No account is associated with this email. ");
-    error.status = 401;
+    error.status = 404;
     throw error;
   }
 
@@ -183,7 +183,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
 
   if (!user) {
     const error = new Error("No account is associated with this email. ");
-    error.status = 400;
+    error.status = 404;
     throw error;
   }
 
@@ -222,7 +222,7 @@ const resetPassword = asyncHandler(async (req, res) => {
 
   if (!user) {
     const error = new Error("No account is associated with this email. ");
-    error.status = 401;
+    error.status = 404;
     throw error;
   }
 
@@ -271,7 +271,7 @@ const changePassword = asyncHandler(async (req, res) => {
     const error = new Error(
       "Invalid password. ",
     );
-    error.status = 400;
+    error.status = 401;
     throw error;
   }
 
