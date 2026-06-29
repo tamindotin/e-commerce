@@ -114,4 +114,30 @@ const deleteAddress = asyncHandler(async(req, res) => {
 
 })
 
-module.exports = { getAllAddresses, addAddress, setDefaultAddress, deleteAddress };
+const updateAddress = asyncHandler(async(req, res) => {
+  const id = req.user;
+  const addressId = req.params;
+
+  const { label, street, city, state, pincode, country } = req.body;
+
+  const  user = User.findById(id)
+  const address = user.addresses.id(addressId)
+
+  if (!address) {
+    const error = new Error("No address found. ");
+    error.status = 404;
+    throw error;
+  }
+
+  Object.assign(address, req.body)
+
+  await user.save()
+
+  return res.status(200).json({
+    success: true,
+    message: "Address updated. ",
+    addresses: user.addresses
+  })
+})
+
+module.exports = { getAllAddresses, addAddress, setDefaultAddress, deleteAddress, updateAddress };
