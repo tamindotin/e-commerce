@@ -263,19 +263,19 @@ const resetPassword = asyncHandler(async (req, res) => {
 const changePassword = asyncHandler(async (req, res) => {
   const id = req.user;
 
-  const { password } = req.body;
+  const { password, newPassword } = req.body;
 
   const user = await User.findById(id).select("+password");
 
-  if (await user.comparePassword(password)) {
+  if (!await user.comparePassword(password)) {
     const error = new Error(
-      "Current password and new password cannot be same. ",
+      "Invalid password. ",
     );
     error.status = 400;
     throw error;
   }
 
-  user.password = password;
+  user.password = newPassword;
 
   await user.save();
 
