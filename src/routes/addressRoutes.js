@@ -4,14 +4,14 @@ const {
   setDefaultAddress,
   deleteAddress,
   updateAddress,
-} = require("../controller/userController");
+} = require("../controller/addressController");
 const auth = require("../middleware/authMiddleware");
 const { addressLimiter } = require("../middleware/rateLimiterMiddleware");
 const validate = require("../middleware/validateMiddleware");
 const {
   addAddressSchema,
   updateAddressSchema,
-} = require("../validator/userValidator");
+} = require("../validator/addressValidator");
 const router = require("express").Router();
 
 router.get("/address", addressLimiter, auth, getAllAddresses);
