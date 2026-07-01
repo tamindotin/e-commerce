@@ -273,10 +273,8 @@ const changePassword = asyncHandler(async (req, res) => {
 
   const user = await User.findById(id).select("+password");
 
-  if (!await user.comparePassword(password)) {
-    const error = new Error(
-      "Invalid password. ",
-    );
+  if (!(await user.comparePassword(password))) {
+    const error = new Error("Invalid password. ");
     error.status = 401;
     throw error;
   }
@@ -312,5 +310,5 @@ module.exports = {
   forgotPassword,
   resetPassword,
   changePassword,
-  logout
+  logout,
 };

@@ -8,6 +8,7 @@ const {
   changePassword,
   logout,
 } = require("../controller/authController");
+
 const auth = require("../middleware/authMiddleware");
 
 const {
@@ -16,6 +17,7 @@ const {
 } = require("../middleware/rateLimiterMiddleware");
 
 const validate = require("../middleware/validateMiddleware");
+
 const {
   registerSchema,
   loginSchema,
@@ -30,13 +32,20 @@ const router = require("express").Router();
 
 router.post("/register", authLimiter, validate(registerSchema), register);
 router.post("/login", authLimiter, validate(loginSchema), login);
+router.post("/logout", auth, logout);
+
 router.post(
   "/verify-account",
   authLimiter,
   validate(verifyAccountSchema),
   verifyAccount,
 );
-router.post("/resend-otp", otpLimiter, validate(resendOtpSchema), resendOtp);
+router.post(
+  "/resend-otp",
+  otpLimiter,
+  validate(resendOtpSchema),
+  resendOtp);
+  
 router.post(
   "/forgot-password",
   otpLimiter,
@@ -56,6 +65,5 @@ router.put(
   validate(changePasswordSchema),
   changePassword,
 );
-router.post("/logout", authLimiter, logout);
 
 module.exports = router;

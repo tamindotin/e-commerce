@@ -29,8 +29,8 @@ const addAddressSchema = joi.object({
   city: city.required(),
   state: state.required(),
   pincode: pincode.required(),
-  country: country.required()
-})
+  country: country.required(),
+});
 
 const updateAddressSchema = joi.object({
   street: street,
@@ -40,4 +40,4 @@ const updateAddressSchema = joi.object({
   country: country,
 });
 
-module.exports = {addAddressSchema, updateAddressSchema}
+module.exports = { addAddressSchema, updateAddressSchema };

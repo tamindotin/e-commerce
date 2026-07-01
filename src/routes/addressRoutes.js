@@ -5,16 +5,26 @@ const {
   deleteAddress,
   updateAddress,
 } = require("../controller/addressController");
+
 const auth = require("../middleware/authMiddleware");
+
 const { addressLimiter } = require("../middleware/rateLimiterMiddleware");
+
 const validate = require("../middleware/validateMiddleware");
+
 const {
   addAddressSchema,
   updateAddressSchema,
 } = require("../validator/addressValidator");
+
 const router = require("express").Router();
 
-router.get("/address", addressLimiter, auth, getAllAddresses);
+router.get(
+  "/address",
+  addressLimiter,
+  auth,
+  getAllAddresses);
+
 router.post(
   "/address",
   addressLimiter,
@@ -22,8 +32,19 @@ router.post(
   validate(addAddressSchema),
   addAddress,
 );
-router.patch("/address/:id/default", addressLimiter, auth, setDefaultAddress);
-router.delete("/address/:id", addressLimiter, auth, deleteAddress);
+
+router.patch(
+  "/address/:id/default",
+  addressLimiter,
+  auth,
+  setDefaultAddress);
+
+router.delete(
+  "/address/:id",
+  addressLimiter,
+  auth,
+  deleteAddress);
+  
 router.put(
   "/address/:id",
   addressLimiter,
