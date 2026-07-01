@@ -40,7 +40,7 @@ const addAddress = asyncHandler(async (req, res) => {
   const isDefault = user.addresses.length == 0;
 
   user.addresses.push({
-    label,
+    label: label.toUpperCase(),
     street,
     city,
     state,
@@ -157,6 +157,10 @@ const updateAddress = asyncHandler(async (req, res) => {
     "pincode",
     "country",
   ];
+
+  if (req.body[allowedFields[0]] !== undefined) {
+    req.body[allowedFields[0]] = req.body[allowedFields[0]].toUpperCase();
+  }
 
   allowedFields.forEach((field) => {
     if (req.body[field] !== undefined) {
