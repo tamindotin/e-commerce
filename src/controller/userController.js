@@ -4,7 +4,7 @@ const asyncHandler = require("express-async-handler");
 const getAllAddresses = asyncHandler(async (req, res) => {
   const id = req.user;
 
-  const user = await User.findById(id);
+  const user = await User.findById(id).select("addresses");
 
   if (!user) {
     const error = new Error("User not found.");
@@ -15,7 +15,7 @@ const getAllAddresses = asyncHandler(async (req, res) => {
   if (user.addresses.length == 0) {
     return res.status(200).json({
       success: true,
-      addresses: "No address to display. ",
+      addresses: [],
     });
   }
 
@@ -29,7 +29,7 @@ const addAddress = asyncHandler(async (req, res) => {
   const id = req.user;
   const { label, street, city, state, pincode, country } = req.body;
 
-  const user = await User.findById(id);
+  const user = await User.findById(id).select("addresses");
 
   if (!user) {
     const error = new Error("User not found.");
@@ -51,7 +51,7 @@ const addAddress = asyncHandler(async (req, res) => {
 
   await user.save();
 
-  return res.status(200).json({
+  return res.status(201).json({
     success: true,
     message: "New address added",
     addresses: user.addresses,
@@ -62,7 +62,7 @@ const setDefaultAddress = asyncHandler(async (req, res) => {
   const id = req.user;
   const addressId = req.params.id;
 
-  const user = await User.findById(id);
+  const user = await User.findById(id).select("addresses");
 
   if (!user) {
     const error = new Error("User not found.");
@@ -74,7 +74,7 @@ const setDefaultAddress = asyncHandler(async (req, res) => {
 
   if (!address) {
     const error = new Error("No address found. ");
-    error.status = 400;
+    error.status = 404;
     throw error;
   }
 
@@ -96,7 +96,7 @@ const deleteAddress = asyncHandler(async (req, res) => {
   const id = req.user;
   const addressId = req.params.id;
 
-  const user = await User.findById(id);
+  const user = await User.findById(id).select("addresses");
 
   if (!user) {
     const error = new Error("User not found.");
@@ -108,7 +108,7 @@ const deleteAddress = asyncHandler(async (req, res) => {
 
   if (!address) {
     const error = new Error("No address found. ");
-    error.status = 400;
+    error.status = 404;
     throw error;
   }
 
@@ -133,9 +133,7 @@ const updateAddress = asyncHandler(async (req, res) => {
   const id = req.user;
   const addressId = req.params.id;
 
-  const { label, street, city, state, pincode, country } = req.body;
-
-  const user = await User.findById(id);
+  const user = await User.findById(id).select("addresses");
 
   if (!user) {
     const error = new Error("User not found.");
