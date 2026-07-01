@@ -6,6 +6,12 @@ const getAllAddresses = asyncHandler(async (req, res) => {
 
   const user = await User.findById(id);
 
+  if (!user) {
+    const error = new Error("User not found.");
+    error.status = 404;
+    throw error;
+  }
+
   if (user.addresses.length == 0) {
     return res.status(200).json({
       success: true,
@@ -23,20 +29,18 @@ const addAddress = asyncHandler(async (req, res) => {
   const id = req.user;
   const { label, street, city, state, pincode, country } = req.body;
 
-  if (!label || !street || !city || !state || !pincode || !country) {
-    const error = new Error(
-      "LABEL, STREET, CITY, STATE, PINCODE and COUNTRY is required for address",
-    );
-    error.status = 400;
+  const user = await User.findById(id);
+
+  if (!user) {
+    const error = new Error("User not found.");
+    error.status = 404;
     throw error;
   }
-
-  const user = await User.findById(id);
 
   const isDefault = user.addresses.length == 0;
 
   user.addresses.push({
-    label: label.toUpperCase(),
+    label,
     street,
     city,
     state,
@@ -60,9 +64,11 @@ const setDefaultAddress = asyncHandler(async (req, res) => {
 
   const user = await User.findById(id);
 
-  user.addresses.forEach((address) => {
-    address.isDefault = false;
-  });
+  if (!user) {
+    const error = new Error("User not found.");
+    error.status = 404;
+    throw error;
+  }
 
   const address = user.addresses.id(addressId);
 
@@ -71,6 +77,10 @@ const setDefaultAddress = asyncHandler(async (req, res) => {
     error.status = 400;
     throw error;
   }
+
+  user.addresses.forEach((address) => {
+    address.isDefault = false;
+  });
 
   address.isDefault = true;
 
@@ -87,6 +97,12 @@ const deleteAddress = asyncHandler(async (req, res) => {
   const addressId = req.params.id;
 
   const user = await User.findById(id);
+
+  if (!user) {
+    const error = new Error("User not found.");
+    error.status = 404;
+    throw error;
+  }
 
   const address = user.addresses.id(addressId);
 
@@ -120,6 +136,13 @@ const updateAddress = asyncHandler(async (req, res) => {
   const { label, street, city, state, pincode, country } = req.body;
 
   const user = await User.findById(id);
+
+  if (!user) {
+    const error = new Error("User not found.");
+    error.status = 404;
+    throw error;
+  }
+
   const address = user.addresses.id(addressId);
 
   if (!address) {
