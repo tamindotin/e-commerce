@@ -20,13 +20,13 @@ const {
 const router = require("express").Router();
 
 router.get(
-  "/address",
+  "/",
   addressLimiter,
   auth,
   getAllAddresses);
 
 router.post(
-  "/address",
+  "/",
   addressLimiter,
   auth,
   validate(addAddressSchema),
@@ -34,19 +34,19 @@ router.post(
 );
 
 router.patch(
-  "/address/:id/default",
+  "/:id/default",
   addressLimiter,
   auth,
   setDefaultAddress);
 
 router.delete(
-  "/address/:id",
+  "/:id",
   addressLimiter,
   auth,
   deleteAddress);
-  
+
 router.put(
-  "/address/:id",
+  "/:id",
   addressLimiter,
   auth,
   validate(updateAddressSchema),
