@@ -43,4 +43,51 @@ const addCategory = asyncHandler(async (req, res) => {
   });
 });
 
-module.exports = { addCategory };
+const getCategories = asyncHandler(async (req, res) => {
+  const filters = {};
+
+  if (req.query.name) {
+    filters.name = {
+      $regex: req.query.name,
+      $options: "i",
+    };
+  }
+
+  if (req.query.slug) {
+    filters.slug = req.query.slug;
+  }
+
+  if (req.query.isActive !== undefined) {
+    filters.isActive = req.query.isActive === "true";
+  }
+
+  const allowedSortFields = ["name", "slug", "createdAt", "-createdAt"];
+  const sort = allowedSortFields.includes(req.query.sort)
+    ? req.query.sort
+    : "-createdAt";
+
+  const page = Math.max(Number(req.query.page) || 1, 1);
+  const limit = Math.min(Math.max(Number(req.query.limit) || 10, 1), 100);
+  const skip = (page - 1) * limit;
+
+  const [totalCategories, categories] = await Promise.all([
+    Category.countDocuments(filters),
+    Category.find(filters).sort(sort).skip(skip).limit(limit),
+  ]);
+  const totalPages = Math.ceil(totalCategories / limit);
+
+  res.status(200).json({
+    success: true,
+    pagination: {
+    page,
+    limit,
+    totalCategories,
+    totalPages,
+    hasNextPage: page < totalPages,
+    hashPreviousPage: page > 1
+  },
+    categories,
+  });
+});
+
+module.exports = { addCategory, getCategories };
