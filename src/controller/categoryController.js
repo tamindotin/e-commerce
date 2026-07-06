@@ -79,15 +79,76 @@ const getCategories = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     pagination: {
-    page,
-    limit,
-    totalCategories,
-    totalPages,
-    hasNextPage: page < totalPages,
-    hashPreviousPage: page > 1
-  },
+      page,
+      limit,
+      totalCategories,
+      totalPages,
+      hasNextPage: page < totalPages,
+      hashPreviousPage: page > 1,
+    },
     categories,
   });
 });
 
-module.exports = { addCategory, getCategories };
+const updateCategory = asyncHandler(async (req, res) => {
+  const categoryId = req.params.id;
+
+  const category = await Category.findById(categoryId);
+
+  if (!category) {
+    const error = new Error("Category not found. ");
+    error.status = 400;
+    throw error;
+  }
+
+  if (req.file) {
+    try {
+      const uploaded = await cloudinary.uploader.upload(req.file.path);
+
+      if (category.image?.publicId) {
+        await cloudinary.uploader.destroy(category.image.publicId);
+      }
+
+      category.image.publicId = uploaded.public_id;
+      category.image.url = uploaded.secure_url;
+    } finally {
+      await fs.unlink(req.file.path);
+    }
+  }
+
+  if (req.body.name !== undefined) {
+    const slug = slugify(req.body.name, {
+      lower: true,
+      strict: true,
+    });
+
+    const existingCategory = await Category.findOne({
+      slug,
+      _id: { $ne: category._id },
+    });
+
+    if (existingCategory) {
+      const error = new Error("A category with this slug exists. ");
+      error.status = 400;
+      throw error;
+    }
+
+    category.name = req.body.name;
+    category.slug = slug;
+  }
+
+  if (req.body.isActive !== undefined) {
+    const isActive = req.body.isActive === "true";
+
+    category.isActive = isActive;
+  }
+
+  await category.save();
+
+  res.status(200).json({
+    success: true,
+    category,
+  });
+});
+
+module.exports = { addCategory, getCategories, updateCategory };
