@@ -85,7 +85,7 @@ const getCategories = asyncHandler(async (req, res) => {
       totalCategories,
       totalPages,
       hasNextPage: page < totalPages,
-      hashPreviousPage: page > 1,
+      hasPreviousPage: page > 1,
     },
     categories,
   });
