@@ -1,4 +1,5 @@
 const Category = require("../model/categoryModel");
+const Product = require("../model/productModel");
 const asyncHandler = require("express-async-handler");
 const slugify = require("slugify");
 const cloudinary = require("../config/cloudinary");
@@ -151,4 +152,33 @@ const updateCategory = asyncHandler(async (req, res) => {
   });
 });
 
-module.exports = { addCategory, getCategories, updateCategory };
+const deleteCategory = asyncHandler(async (req, res) => {
+  const categoryId = req.params.id;
+
+  const category = await Category.findById(categoryId);
+
+  if (!category) {
+    const error = new Error("Category not found. ");
+    error.status = 404;
+    throw error;
+  }
+
+  const productExists = await Product.exists({ category: category._id });
+
+  if (productExists) {
+    const error = new Error(
+      "Category cannot be deleted because products reference it. ",
+    );
+    error.status = 409;
+    throw error;
+  }
+
+  await category.deleteOne();
+
+  res.status(200).json({
+    success: true,
+    message: "Category deleted successfully. ",
+  });
+});
+
+module.exports = { addCategory, getCategories, updateCategory, deleteCategory };
