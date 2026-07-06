@@ -130,7 +130,7 @@ const updateCategory = asyncHandler(async (req, res) => {
 
     if (existingCategory) {
       const error = new Error("A category with this slug exists. ");
-      error.status = 400;
+      error.status = 404;
       throw error;
     }
 
