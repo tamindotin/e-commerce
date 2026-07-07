@@ -1,6 +1,7 @@
 const Product = require("../model/productModel");
 const Category = require("../model/categoryModel");
 const asyncHandler = require("express-async-handler");
+const slugify = require('slugify')
 const cloudinary = require("../config/cloudinary");
 const fs = require("fs/promises");
 const cleanupImages = require("../helper/imageCleanup");
@@ -234,4 +235,22 @@ const getProducts = asyncHandler(async (req, res) => {
   });
 });
 
-module.exports = { addProduct, getProducts };
+const getProduct = asyncHandler(async (req, res) => {
+  const id = req.params.id
+
+  const product = await Product.findById(id).populate("category");
+
+  if(!product){
+    const error = new Error("Product not found. ")
+    error.status = 404
+    throw error
+  }
+
+  res.status(200).json({
+    success: true,
+    product
+  })
+
+})
+
+module.exports = { addProduct, getProducts, getProduct };
