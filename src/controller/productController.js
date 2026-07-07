@@ -7,6 +7,7 @@ const fs = require("fs/promises");
 const cleanupImages = require("../helper/imageCleanup");
 const getSlug = require("../helper/getSlug");
 const parseToJson = require("../helper/parseToJson");
+const checkDuplicate = require("../helper/checkDuplicate");
 
 const addProduct = asyncHandler(async (req, res) => {
   const { name, description, brand, category_slug, model, price, stock, sku } =
@@ -247,16 +248,7 @@ const updateProduct = asyncHandler(async (req, res) => {
   if (req.body.name !== undefined) {
     const slug = getSlug(req.body.name);
 
-    const existingProduct = await Product.findOne({
-      slug,
-      _id: { $ne: product._id },
-    });
-
-    if (existingProduct) {
-      const error = new Error("A product with this slug exists. ");
-      error.status = 409;
-      throw error;
-    }
+    await checkDuplicate(Product, "slug", slug, product._id);
 
     product.name = req.body.name;
     product.slug = slug;
@@ -275,16 +267,7 @@ const updateProduct = asyncHandler(async (req, res) => {
   }
 
   if (req.body.sku !== undefined) {
-    const existingProduct = await Product.findOne({
-      sku: req.body.sku,
-      _id: { $ne: product._id },
-    });
-
-    if (existingProduct) {
-      const error = new Error("A product with this sku exists. ");
-      error.status = 409;
-      throw error;
-    }
+    await checkDuplicate(Product, "sku", req.body.sku, product._id);
 
     product.sku = req.body.sku;
   }
