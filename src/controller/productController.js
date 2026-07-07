@@ -6,6 +6,7 @@ const cloudinary = require("../config/cloudinary");
 const fs = require("fs/promises");
 const cleanupImages = require("../helper/imageCleanup");
 const getSlug = require("../helper/getSlug");
+const parseToJson = require("../helper/parseToJson");
 
 const addProduct = asyncHandler(async (req, res) => {
   const { name, description, brand, category_slug, model, price, stock, sku } =
@@ -39,25 +40,8 @@ const addProduct = asyncHandler(async (req, res) => {
   let specifications = req.body.specifications;
   let tags = req.body.tags;
 
-  try {
-    if (typeof specifications === "string") {
-      specifications = JSON.parse(specifications);
-    }
-  } catch {
-    const error = new Error("Invalid specifications format.");
-    error.status = 400;
-    throw error;
-  }
-
-  try {
-    if (typeof tags === "string") {
-      tags = JSON.parse(tags);
-    }
-  } catch {
-    const error = new Error("Invalid tags format.");
-    error.status = 400;
-    throw error;
-  }
+  specifications = parseToJson(specifications);
+  tags = parseToJson(tags);
 
   const images = [];
   const uploadedImages = [];
@@ -308,15 +292,7 @@ const updateProduct = asyncHandler(async (req, res) => {
   if (req.body.specifications !== undefined) {
     let specifications = req.body.specifications;
 
-    try {
-      if (typeof specifications === "string") {
-        specifications = JSON.parse(specifications);
-      }
-    } catch {
-      const error = new Error("Invalid specifications format.");
-      error.status = 400;
-      throw error;
-    }
+    specifications = parseToJson(specifications);
 
     product.specifications = specifications;
   }
@@ -324,15 +300,7 @@ const updateProduct = asyncHandler(async (req, res) => {
   if (req.body.tags !== undefined) {
     let tags = req.body.tags;
 
-    try {
-      if (typeof tags === "string") {
-        tags = JSON.parse(tags);
-      }
-    } catch {
-      const error = new Error("Invalid tags format.");
-      error.status = 400;
-      throw error;
-    }
+    tags = parseToJson(tags);
 
     product.tags = tags;
   }
