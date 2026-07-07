@@ -305,6 +305,14 @@ const updateProduct = asyncHandler(async (req, res) => {
     product.tags = tags;
   }
 
+  if (req.body.isFeatured !== undefined) {
+    product.isFeatured = req.body.isFeatured;
+  }
+
+  if (req.body.isPublished !== undefined) {
+    product.isPublished = req.body.isPublished;
+  }
+
   const otherFields = [
     "description",
     "brand",
@@ -327,4 +335,5 @@ const updateProduct = asyncHandler(async (req, res) => {
     product,
   });
 });
+
 module.exports = { addProduct, getProducts, getProduct, updateProduct };
