@@ -1,22 +1,15 @@
 const Product = require("../model/productModel");
 const Category = require("../model/categoryModel");
 const asyncHandler = require("express-async-handler");
-const slugify = require('slugify')
+const slugify = require("slugify");
 const cloudinary = require("../config/cloudinary");
 const fs = require("fs/promises");
 const cleanupImages = require("../helper/imageCleanup");
+const getSlug = require("../helper/getSlug");
 
 const addProduct = asyncHandler(async (req, res) => {
-  const {
-    name,
-    description,
-    brand,
-    category_slug,
-    model,
-    price,
-    stock,
-    sku,
-  } = req.body;
+  const { name, description, brand, category_slug, model, price, stock, sku } =
+    req.body;
 
   if (!req.files || req.files.length === 0) {
     const error = new Error("At least 1 image is required. ");
@@ -26,8 +19,8 @@ const addProduct = asyncHandler(async (req, res) => {
 
   const slug = slugify(name, {
     lower: true,
-    strict: true
-  })
+    strict: true,
+  });
 
   if (await Product.findOne({ slug })) {
     const error = new Error("A product with this slug exists. ");
@@ -240,21 +233,130 @@ const getProducts = asyncHandler(async (req, res) => {
 });
 
 const getProduct = asyncHandler(async (req, res) => {
-  const id = req.params.id
+  const id = req.params.id;
 
   const product = await Product.findById(id).populate("category");
 
-  if(!product){
-    const error = new Error("Product not found. ")
-    error.status = 404
-    throw error
+  if (!product) {
+    const error = new Error("Product not found. ");
+    error.status = 404;
+    throw error;
   }
 
   res.status(200).json({
     success: true,
-    product
-  })
+    product,
+  });
+});
 
-})
+const updateProduct = asyncHandler(async (req, res) => {
+  const id = req.params.id;
 
-module.exports = { addProduct, getProducts, getProduct };
+  const product = await Product.findById(id);
+
+  if (!product) {
+    const error = new Error("Product not found");
+    error.status = 404;
+    throw error;
+  }
+
+  if (req.body.name !== undefined) {
+    const slug = getSlug(req.body.name);
+
+    const existingProduct = await Product.findOne({
+      slug,
+      _id: { $ne: product._id },
+    });
+
+    if (existingProduct) {
+      const error = new Error("A product with this slug exists. ");
+      error.status = 409;
+      throw error;
+    }
+
+    product.name = req.body.name;
+    product.slug = slug;
+  }
+
+  if (req.body.category_slug !== undefined) {
+    const category = await Category.findOne({ slug: req.body.category_slug });
+
+    if (!category) {
+      const error = new Error("Category not found. ");
+      error.status = 404;
+      throw error;
+    }
+
+    product.category = category._id;
+  }
+
+  if (req.body.sku !== undefined) {
+    const existingProduct = await Product.findOne({
+      sku: req.body.sku,
+      _id: { $ne: product._id },
+    });
+
+    if (existingProduct) {
+      const error = new Error("A product with this sku exists. ");
+      error.status = 409;
+      throw error;
+    }
+
+    product.sku = req.body.sku;
+  }
+
+  if (req.body.specifications !== undefined) {
+    let specifications = req.body.specifications;
+
+    try {
+      if (typeof specifications === "string") {
+        specifications = JSON.parse(specifications);
+      }
+    } catch {
+      const error = new Error("Invalid specifications format.");
+      error.status = 400;
+      throw error;
+    }
+
+    product.specifications = specifications;
+  }
+
+  if (req.body.tags !== undefined) {
+    let tags = req.body.tags;
+
+    try {
+      if (typeof tags === "string") {
+        tags = JSON.parse(tags);
+      }
+    } catch {
+      const error = new Error("Invalid tags format.");
+      error.status = 400;
+      throw error;
+    }
+
+    product.tags = tags;
+  }
+
+  const otherFields = [
+    "description",
+    "brand",
+    "model",
+    "price",
+    "compareAtPrice",
+    "stock",
+  ];
+
+  otherFields.forEach((field) => {
+    if (req.body[field] !== undefined) {
+      product[field] = req.body[field];
+    }
+  });
+
+  await product.save();
+
+  res.status(200).json({
+    success: true,
+    product,
+  });
+});
+module.exports = { addProduct, getProducts, getProduct, updateProduct };
