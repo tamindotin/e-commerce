@@ -9,7 +9,6 @@ const cleanupImages = require("../helper/imageCleanup");
 const addProduct = asyncHandler(async (req, res) => {
   const {
     name,
-    slug,
     description,
     brand,
     category_slug,
@@ -24,6 +23,11 @@ const addProduct = asyncHandler(async (req, res) => {
     error.status = 400;
     throw error;
   }
+
+  const slug = slugify(name, {
+    lower: true,
+    strict: true
+  })
 
   if (await Product.findOne({ slug })) {
     const error = new Error("A product with this slug exists. ");
