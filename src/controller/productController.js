@@ -49,7 +49,9 @@ const addProduct = asyncHandler(async (req, res) => {
 
   for (const file of req.files) {
     try {
-      const result = await cloudinary.uploader.upload(file.path);
+      const result = await cloudinary.uploader.upload(file.path, {
+        folder: "e-commerce/products"
+      });
 
       uploadedImages.push(result.public_id);
 
@@ -121,7 +123,9 @@ const addImage = asyncHandler(async (req, res) => {
   }
 
   try {
-    const result = await cloudinary.uploader.upload(req.file.path);
+    const result = await cloudinary.uploader.upload(req.file.path, {
+      folder: "e-commerce/products",
+    });
 
     product.images.push({
       publicId: result.public_id,
@@ -381,7 +385,7 @@ const updateImage = asyncHandler(async (req, res) => {
     throw error;
   }
 
-  const image = product.images.find((image) => image.publicId === imageId);
+  const image = product.images.id(imageId);
 
   if (!image) {
     const error = new Error("Image not found");
@@ -391,7 +395,9 @@ const updateImage = asyncHandler(async (req, res) => {
 
   try {
     const oldImageId = image.publicId;
-    const uploaded = await cloudinary.uploader.upload(req.file.path);
+    const uploaded = await cloudinary.uploader.upload(req.file.path, {
+      folder: "e-commerce/products",
+    });
 
     image.publicId = uploaded.public_id;
     image.url = uploaded.secure_url;
@@ -433,7 +439,7 @@ const deleteImage = asyncHandler(async (req, res) => {
     throw error;
   }
 
-  const image = product.images.find((image) => image.publicId === imageId);
+  const image = product.images.id(imageId);
 
   if (!image) {
     const error = new Error("Image not found.");
@@ -441,11 +447,11 @@ const deleteImage = asyncHandler(async (req, res) => {
     throw error;
   }
 
-  product.images = product.images.filter((img) => img.publicId !== imageId);
+  await image.deleteOne();
 
   await product.save();
 
-  const result = await cloudinary.uploader.destroy(imageId);
+  const result = await cloudinary.uploader.destroy(image.publicId);
 
   if (!["ok", "not found"].includes(result.result)) {
     const error = new Error("Failed to delete image.");

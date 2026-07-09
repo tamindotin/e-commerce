@@ -28,7 +28,9 @@ const addCategory = asyncHandler(async (req, res) => {
   const image = {};
 
   try {
-    const result = await cloudinary.uploader.upload(req.file.path);
+    const result = await cloudinary.uploader.upload(req.file.path, {
+      folder: "e-commerce/categories"
+    });
     image.publicId = result.public_id;
     image.url = result.secure_url;
   } finally {
@@ -104,7 +106,9 @@ const updateCategory = asyncHandler(async (req, res) => {
 
   if (req.file) {
     try {
-      const uploaded = await cloudinary.uploader.upload(req.file.path);
+      const uploaded = await cloudinary.uploader.upload(req.file.path, {
+        folder: "e-commerce/categories",
+      });
 
       if (category.image?.publicId) {
         await cloudinary.uploader.destroy(category.image.publicId);
