@@ -5,12 +5,14 @@ const {
   updateProduct,
   updateImage,
   deleteImage,
+  addImage,
 } = require("../controller/productController");
 const upload = require("../middleware/multerMiddleware");
 
 const router = require("express").Router();
 
 router.post("/", upload.array("images", 5), addProduct);
+router.post("/:id", upload.single("image"), addImage);
 router.get("/", getProducts);
 router.get("/:id", getProduct);
 router.patch("/:id", updateProduct);

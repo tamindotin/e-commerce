@@ -95,6 +95,50 @@ const addProduct = asyncHandler(async (req, res) => {
   });
 });
 
+const addImage = asyncHandler(async (req, res) => {
+  const MAX_IMAGES = 5;
+
+  const id = req.params.id;
+
+  if (!req.file) {
+    const error = new Error("Image is required. ");
+    error.status = 400;
+    throw error;
+  }
+
+  const product = await Product.findById(id).select("images");
+
+  if (!product) {
+    const error = new Error("Product not found. ");
+    error.status = 404;
+    throw error;
+  }
+
+  if (product.images.length >= MAX_IMAGES) {
+    const error = new Error("A product cannot have more than 5 images. ");
+    error.status = 400;
+    throw error;
+  }
+
+  try {
+    const result = await cloudinary.uploader.upload(req.file.path);
+
+    product.images.push({
+      publicId: result.public_id,
+      url: result.secure_url,
+    });
+
+    await product.save();
+  } finally {
+    await fs.unlink(req.file.path);
+  }
+
+  res.status(200).json({
+    success: true,
+    product,
+  });
+});
+
 const getProducts = asyncHandler(async (req, res) => {
   const limit = Math.min(Math.max(Number(req.query.limit) || 10, 1), 100);
   const page = Math.max(Number(req.query.page) || 1, 1);
@@ -415,9 +459,9 @@ const deleteImage = asyncHandler(async (req, res) => {
   });
 });
 
-
 module.exports = {
   addProduct,
+  addImage,
   getProducts,
   getProduct,
   updateProduct,
