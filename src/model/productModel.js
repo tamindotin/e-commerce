@@ -11,7 +11,7 @@ const imageSchema = new mongoose.Schema(
       required: true,
     },
   },
-  { _id: false },
+  { _id: true },
 );
 
 const productSchema = new mongoose.Schema(

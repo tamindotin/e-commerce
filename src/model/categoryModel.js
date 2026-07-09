@@ -12,16 +12,20 @@ const categorySchema = new mongoose.Schema(
     slug: {
       type: String,
       required: true,
-      unique: true
+      unique: true,
     },
     image: {
+      _id: {
+        type: mongoose.Schema.Types.ObjectId,
+        auto: true,
+      },
       publicId: String,
       url: String,
     },
     isActive: {
       type: Boolean,
-      default: true
-    }
+      default: true,
+    },
   },
   { timestamps: true },
 );
