@@ -173,6 +173,8 @@ const deleteCategory = asyncHandler(async (req, res) => {
     throw error;
   }
 
+  await cloudinary.uploader.destroy(category.image.publicId)
+
   await category.deleteOne();
 
   res.status(200).json({
