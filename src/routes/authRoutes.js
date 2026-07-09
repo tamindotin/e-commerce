@@ -40,12 +40,8 @@ router.post(
   validate(verifyAccountSchema),
   verifyAccount,
 );
-router.post(
-  "/resend-otp",
-  otpLimiter,
-  validate(resendOtpSchema),
-  resendOtp);
-  
+router.post("/resend-otp", otpLimiter, validate(resendOtpSchema), resendOtp);
+
 router.post(
   "/forgot-password",
   otpLimiter,

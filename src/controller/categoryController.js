@@ -29,7 +29,7 @@ const addCategory = asyncHandler(async (req, res) => {
 
   try {
     const result = await cloudinary.uploader.upload(req.file.path, {
-      folder: "e-commerce/categories"
+      folder: "e-commerce/categories",
     });
     image.publicId = result.public_id;
     image.url = result.secure_url;
@@ -177,7 +177,7 @@ const deleteCategory = asyncHandler(async (req, res) => {
     throw error;
   }
 
-  await cloudinary.uploader.destroy(category.image.publicId)
+  await cloudinary.uploader.destroy(category.image.publicId);
 
   await category.deleteOne();
 

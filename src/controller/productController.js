@@ -50,7 +50,7 @@ const addProduct = asyncHandler(async (req, res) => {
   for (const file of req.files) {
     try {
       const result = await cloudinary.uploader.upload(file.path, {
-        folder: "e-commerce/products"
+        folder: "e-commerce/products",
       });
 
       uploadedImages.push(result.public_id);
