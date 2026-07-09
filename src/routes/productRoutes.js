@@ -4,6 +4,7 @@ const {
   getProduct,
   updateProduct,
   updateImage,
+  deleteImage,
 } = require("../controller/productController");
 const upload = require("../middleware/multerMiddleware");
 
@@ -14,5 +15,6 @@ router.get("/", getProducts);
 router.get("/:id", getProduct);
 router.patch("/:id", updateProduct);
 router.patch("/:productId/image/:imageId", upload.single("image"), updateImage);
+router.delete("/:productId/image/:imageId", deleteImage);
 
 module.exports = router;

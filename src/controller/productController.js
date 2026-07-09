@@ -371,10 +371,56 @@ const updateImage = asyncHandler(async (req, res) => {
   });
 });
 
+const deleteImage = asyncHandler(async (req, res) => {
+  const productId = req.params.productId;
+  const imageId = req.params.imageId;
+
+  const product = await Product.findById(productId).select("images");
+
+  if (!product) {
+    const error = new Error("Product not found.");
+    error.status = 404;
+    throw error;
+  }
+
+  if (product.images.length === 1) {
+    const error = new Error("At least 1 image is required for a product. ");
+    error.status = 400;
+    throw error;
+  }
+
+  const image = product.images.find((image) => image.publicId === imageId);
+
+  if (!image) {
+    const error = new Error("Image not found.");
+    error.status = 404;
+    throw error;
+  }
+
+  product.images = product.images.filter((img) => img.publicId !== imageId);
+
+  await product.save();
+
+  const result = await cloudinary.uploader.destroy(imageId);
+
+  if (!["ok", "not found"].includes(result.result)) {
+    const error = new Error("Failed to delete image.");
+    error.status = 500;
+    throw error;
+  }
+
+  res.status(200).json({
+    success: true,
+    message: "Image deleted successfully. ",
+  });
+});
+
+
 module.exports = {
   addProduct,
   getProducts,
   getProduct,
   updateProduct,
   updateImage,
+  deleteImage,
 };
