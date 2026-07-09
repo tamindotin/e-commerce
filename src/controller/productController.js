@@ -319,4 +319,62 @@ const updateProduct = asyncHandler(async (req, res) => {
   });
 });
 
-module.exports = { addProduct, getProducts, getProduct, updateProduct };
+const updateImage = asyncHandler(async (req, res) => {
+  const productId = req.params.productId;
+  const imageId = req.params.imageId;
+
+  if (!req.file) {
+    const error = new Error("Image is required. ");
+    error.status = 400;
+    throw error;
+  }
+
+  const product = await Product.findById(productId).select("images");
+
+  if (!product) {
+    const error = new Error("Product not found");
+    error.status = 404;
+    throw error;
+  }
+
+  const image = product.images.find((image) => image.publicId === imageId);
+
+  if (!image) {
+    const error = new Error("Image not found");
+    error.status = 404;
+    throw error;
+  }
+
+  try {
+    const oldImageId = image.publicId;
+    const uploaded = await cloudinary.uploader.upload(req.file.path);
+
+    image.publicId = uploaded.public_id;
+    image.url = uploaded.secure_url;
+
+    await product.save();
+
+    try {
+      if (oldImageId) {
+        await cloudinary.uploader.destroy(oldImageId);
+      }
+    } catch (error) {
+      console.error("Image deletion failed: ", error);
+    }
+  } finally {
+    await fs.unlink(req.file.path);
+  }
+
+  res.status(200).json({
+    success: true,
+    product,
+  });
+});
+
+module.exports = {
+  addProduct,
+  getProducts,
+  getProduct,
+  updateProduct,
+  updateImage,
+};
