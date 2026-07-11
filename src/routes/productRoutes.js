@@ -1,3 +1,13 @@
+const router = require("express").Router();
+
+const upload = require("../middleware/multerMiddleware");
+const validator = require("../middleware/validateMiddleware");
+const {
+  apiLimiter,
+  writeLimiter,
+} = require("../middleware/rateLimiterMiddleware");
+const parseProductFields = require("../middleware/parseJsonFields")
+
 const {
   addProduct,
   getProducts,
@@ -8,17 +18,68 @@ const {
   addImage,
   deleteProduct,
 } = require("../controller/productController");
-const upload = require("../middleware/multerMiddleware");
 
-const router = require("express").Router();
+const {
+  addProductValidator,
+  updateProductValidator,
+  getProductsQueryValidator,
+  productIdValidator,
+  imageIdValidator,
+  productImageIdValidator,
+} = require("../validator/productValidator");
 
-router.post("/", upload.array("images", 5), addProduct);
-router.post("/:id", upload.single("image"), addImage);
-router.get("/", getProducts);
-router.get("/:id", getProduct);
-router.patch("/:id", updateProduct);
-router.patch("/:productId/image/:imageId", upload.single("image"), updateImage);
-router.delete("/:productId/image/:imageId", deleteImage);
-router.delete("/:id", deleteProduct);
+router.post(
+  "/",
+  writeLimiter,
+  upload.array("images", 5),
+  parseProductFields(["specifications", "tags"]),
+  validator({ body: addProductValidator }),
+  addProduct,
+);
+router.post(
+  "/:productId",
+  writeLimiter,
+  upload.single("image"),
+  validator({ params: productIdValidator }),
+  addImage,
+);
+router.get(
+  "/",
+  apiLimiter,
+  validator({ query: getProductsQueryValidator }),
+  getProducts,
+);
+router.get(
+  "/:productId",
+  apiLimiter,
+  validator({ params: productIdValidator }),
+  getProduct,
+);
+router.patch(
+  "/:productId",
+  writeLimiter,
+  parseProductFields(["specifications", "tags"]),
+  validator({ params: productIdValidator, body: updateProductValidator }),
+  updateProduct,
+);
+router.patch(
+  "/:productId/image/:imageId",
+  writeLimiter,
+  upload.single("image"),
+  validator({ params: productImageIdValidator }),
+  updateImage,
+);
+router.delete(
+  "/:productId/image/:imageId",
+  writeLimiter,
+  validator({ params: productImageIdValidator }),
+  deleteImage,
+);
+router.delete(
+  "/:productId",
+  writeLimiter,
+  validator({ params: productIdValidator }),
+  deleteProduct,
+);
 
 module.exports = router;
