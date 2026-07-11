@@ -1,3 +1,12 @@
+const router = require("express").Router();
+
+const auth = require("../middleware/authMiddleware");
+const {
+  writeLimiter,
+  apiLimiter,
+} = require("../middleware/rateLimiterMiddleware");
+const validate = require("../middleware/validateMiddleware");
+
 const {
   getAllAddresses,
   addAddress,
@@ -6,32 +15,43 @@ const {
   updateAddress,
 } = require("../controller/addressController");
 
-const auth = require("../middleware/authMiddleware");
-
-const { addressLimiter } = require("../middleware/rateLimiterMiddleware");
-
-const validate = require("../middleware/validateMiddleware");
-
 const {
   addAddressSchema,
   updateAddressSchema,
+  addressIdValidator,
 } = require("../validator/addressValidator");
 
-const router = require("express").Router();
+router.get("/", apiLimiter, auth, getAllAddresses);
 
-router.get("/", addressLimiter, auth, getAllAddresses);
+router.post(
+  "/",
+  writeLimiter,
+  auth,
+  validate({ body: addAddressSchema }),
+  addAddress,
+);
 
-router.post("/", addressLimiter, auth, validate(addAddressSchema), addAddress);
+router.patch(
+  "/:id/default",
+  writeLimiter,
+  auth,
+  validate({ params: addressIdValidator }),
+  setDefaultAddress,
+);
 
-router.patch("/:id/default", addressLimiter, auth, setDefaultAddress);
-
-router.delete("/:id", addressLimiter, auth, deleteAddress);
+router.delete(
+  "/:id",
+  writeLimiter,
+  auth,
+  validate({ params: addressIdValidator }),
+  deleteAddress,
+);
 
 router.put(
   "/:id",
-  addressLimiter,
+  writeLimiter,
   auth,
-  validate(updateAddressSchema),
+  validate({ body: updateAddressSchema, params: addressIdValidator }),
   updateAddress,
 );
 

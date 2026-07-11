@@ -30,8 +30,13 @@ const {
 
 const router = require("express").Router();
 
-router.post("/register", authLimiter, validate(registerSchema), register);
-router.post("/login", authLimiter, validate(loginSchema), login);
+router.post(
+  "/register",
+  authLimiter,
+  validate({ body: registerSchema }),
+  register,
+);
+router.post("/login", authLimiter, validate({ body: loginSchema }), login);
 router.post("/logout", auth, logout);
 
 router.post(
@@ -40,25 +45,30 @@ router.post(
   validate(verifyAccountSchema),
   verifyAccount,
 );
-router.post("/resend-otp", otpLimiter, validate(resendOtpSchema), resendOtp);
+router.post(
+  "/resend-otp",
+  otpLimiter,
+  validate({ body: resendOtpSchema }),
+  resendOtp,
+);
 
 router.post(
   "/forgot-password",
   otpLimiter,
-  validate(forgotPasswordSchema),
+  validate({ body: forgotPasswordSchema }),
   forgotPassword,
 );
 router.post(
   "/reset-password",
   authLimiter,
-  validate(resetPasswordSchema),
+  validate({ body: resetPasswordSchema }),
   resetPassword,
 );
 router.put(
   "/change-password",
   authLimiter,
   auth,
-  validate(changePasswordSchema),
+  validate({ body: changePasswordSchema }),
   changePassword,
 );
 
