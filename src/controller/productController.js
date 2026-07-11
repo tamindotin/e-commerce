@@ -10,8 +10,20 @@ const parseToJson = require("../helper/parseToJson");
 const checkDuplicate = require("../helper/checkDuplicate");
 
 const addProduct = asyncHandler(async (req, res) => {
-  const { name, description, brand, category_slug, model, price, stock, sku } =
-    req.body;
+  const {
+    name,
+    description,
+    brand,
+    category_slug,
+    model,
+    price,
+    stock,
+    sku,
+    specifications,
+    tags,
+  } = req.body;
+
+  console.log(specifications, tags)
 
   if (!req.files || req.files.length === 0) {
     const error = new Error("At least 1 image is required. ");
@@ -37,12 +49,6 @@ const addProduct = asyncHandler(async (req, res) => {
     error.status = 404;
     throw error;
   }
-
-  let specifications = req.body.specifications;
-  let tags = req.body.tags;
-
-  specifications = parseToJson(specifications);
-  tags = parseToJson(tags);
 
   const images = [];
   const uploadedImages = [];
@@ -100,7 +106,7 @@ const addProduct = asyncHandler(async (req, res) => {
 const addImage = asyncHandler(async (req, res) => {
   const MAX_IMAGES = 5;
 
-  const id = req.params.id;
+  const id = req.params.productId;
 
   if (!req.file) {
     const error = new Error("Image is required. ");
@@ -145,28 +151,42 @@ const addImage = asyncHandler(async (req, res) => {
 });
 
 const getProducts = asyncHandler(async (req, res) => {
-  const limit = Math.min(Math.max(Number(req.query.limit) || 10, 1), 100);
-  const page = Math.max(Number(req.query.page) || 1, 1);
+  const limit = req.query.limit || 10;
+  const page = req.query.page || 1;
   const skip = (page - 1) * limit;
 
+  console.log(limit, page)
+
+  const {
+    name,
+    category,
+    brand,
+    model,
+    minPrice,
+    maxPrice,
+    tags,
+    rating,
+    inStock,
+    sort,
+  } = req.query;
   const filters = {};
 
-  if (req.query.name) {
+  if (name) {
     filters.name = {
-      $regex: req.query.name,
+      $regex: name,
       $options: "i",
     };
   }
 
-  if (req.query.category) {
-    const category_slug = slugify(req.query.category, {
+  if (category) {
+    const category_slug = slugify(category, {
       lower: true,
       strict: true,
     });
 
-    const category = await Category.findOne({ slug: category_slug });
+    const categoryObject = await Category.findOne({ slug: category_slug });
 
-    if (!category) {
+    if (!categoryObject) {
       return res.status(200).json({
         success: true,
         pagination: {
@@ -181,70 +201,61 @@ const getProducts = asyncHandler(async (req, res) => {
       });
     }
 
-    filters.category = category._id;
+    filters.category = categoryObject._id;
   }
 
-  if (req.query.brand) {
+  if (brand) {
     filters.brand = {
-      $regex: req.query.brand,
+      $regex: brand,
       $options: "i",
     };
   }
 
-  if (req.query.minPrice || req.query.maxPrice) {
-    filters.price = {};
-
-    const minPrice = Number(req.query.minPrice);
-    const maxPrice = Number(req.query.maxPrice);
-
-    if (!isNaN(minPrice)) {
-      filters.price.$gte = minPrice;
-    }
-
-    if (!isNaN(maxPrice)) {
-      filters.price.$lte = maxPrice;
-    }
-  }
-
-  if (req.query.tags) {
-    filters.tags = {
-      $all: req.query.tags.split(",").map((tag) => tag.trim().toLowerCase()),
+  if (model) {
+    filters.model = {
+      $regex: req.query.model,
+      $options: "i",
     };
   }
 
-  if (req.query.rating) {
-    const rating = Number(req.query.rating);
+  if (minPrice !== undefined || maxPrice !== undefined) {
+    filters.price = {};
 
-    if (!isNaN(rating) && rating >= 0 && rating <= 5) {
-      filters["rating.average"] = {
-        $gte: rating,
-      };
-      filters["rating.count"] = {
-        $gt: 0,
-      };
-    }
+    filters.price.$gte = minPrice;
+
+    filters.price.$lte = maxPrice;
   }
 
-  if (req.query.inStock === "true") {
+  console.log(tags)
+
+  if (tags) {
+    filters.tags = {
+      $in: req.query.tags.split(",").map((tag) => tag.trim().toLowerCase()),
+    };
+  }
+
+  console.log(filters.tags)
+
+  if (rating) {
+    const rating = Number(req.query.rating);
+
+    filters["rating.average"] = {
+      $gte: rating,
+    };
+    filters["rating.count"] = {
+      $gt: 0,
+    };
+  }
+
+  if (inStock === true) {
     filters.stock = {
       $gt: 0,
     };
   }
 
-  if (req.query.inStock === "false") {
+  if (req.query.inStock === false) {
     filters.stock = 0;
   }
-
-  const sortOptions = {
-    newest: "-createdAt",
-    oldest: "createdAt",
-    priceAsc: "price",
-    priceDesc: "-price",
-    nameAsc: "name",
-    nameDesc: "-name",
-  };
-
-  const sort = sortOptions[req.query.sort] || "-createdAt";
 
   const [totalProducts, products] = await Promise.all([
     Product.countDocuments(filters),
@@ -267,7 +278,7 @@ const getProducts = asyncHandler(async (req, res) => {
 });
 
 const getProduct = asyncHandler(async (req, res) => {
-  const id = req.params.id;
+  const id = req.params.productId;
 
   const product = await Product.findById(id).populate("category");
 
@@ -284,7 +295,7 @@ const getProduct = asyncHandler(async (req, res) => {
 });
 
 const updateProduct = asyncHandler(async (req, res) => {
-  const id = req.params.id;
+  const id = req.params.productId;
 
   const product = await Product.findById(id);
 
@@ -294,7 +305,7 @@ const updateProduct = asyncHandler(async (req, res) => {
     throw error;
   }
 
-  if (req.body.name !== undefined) {
+  if (req.body.name) {
     const slug = getSlug(req.body.name);
 
     await checkDuplicate(Product, "slug", slug, product._id);
@@ -303,7 +314,7 @@ const updateProduct = asyncHandler(async (req, res) => {
     product.slug = slug;
   }
 
-  if (req.body.category_slug !== undefined) {
+  if (req.body.category_slug) {
     const category = await Category.findOne({ slug: req.body.category_slug });
 
     if (!category) {
@@ -315,34 +326,10 @@ const updateProduct = asyncHandler(async (req, res) => {
     product.category = category._id;
   }
 
-  if (req.body.sku !== undefined) {
+  if (req.body.sku) {
     await checkDuplicate(Product, "sku", req.body.sku, product._id);
 
     product.sku = req.body.sku;
-  }
-
-  if (req.body.specifications !== undefined) {
-    let specifications = req.body.specifications;
-
-    specifications = parseToJson(specifications);
-
-    product.specifications = specifications;
-  }
-
-  if (req.body.tags !== undefined) {
-    let tags = req.body.tags;
-
-    tags = parseToJson(tags);
-
-    product.tags = tags;
-  }
-
-  if (req.body.isFeatured !== undefined) {
-    product.isFeatured = req.body.isFeatured;
-  }
-
-  if (req.body.isPublished !== undefined) {
-    product.isPublished = req.body.isPublished;
   }
 
   const otherFields = [
@@ -352,6 +339,10 @@ const updateProduct = asyncHandler(async (req, res) => {
     "price",
     "compareAtPrice",
     "stock",
+    "specifications",
+    "tags",
+    "isFeatured",
+    "isPublished",
   ];
 
   otherFields.forEach((field) => {
@@ -469,7 +460,7 @@ const deleteImage = asyncHandler(async (req, res) => {
 });
 
 const deleteProduct = asyncHandler(async (req, res) => {
-  const id = req.params.id;
+  const id = req.params.productId;
 
   const product = await Product.findById(id).select("images");
 
@@ -487,7 +478,7 @@ const deleteProduct = asyncHandler(async (req, res) => {
 
   res.status(200).json({
     success: true,
-    message: "Product deleted successfully. "
+    message: "Product deleted successfully. ",
   });
 });
 
