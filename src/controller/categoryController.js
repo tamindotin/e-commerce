@@ -61,16 +61,13 @@ const getCategories = asyncHandler(async (req, res) => {
   }
 
   if (req.query.isActive !== undefined) {
-    filters.isActive = req.query.isActive === "true";
+    filters.isActive = req.query.isActive;
   }
 
-  const allowedSortFields = ["name", "slug", "createdAt", "-createdAt"];
-  const sort = allowedSortFields.includes(req.query.sort)
-    ? req.query.sort
-    : "-createdAt";
+  const sort = req.query.sort
 
-  const page = Math.max(Number(req.query.page) || 1, 1);
-  const limit = Math.min(Math.max(Number(req.query.limit) || 10, 1), 100);
+  const page = req.query.page;
+  const limit = req.query.limit;
   const skip = (page - 1) * limit;
 
   const [totalCategories, categories] = await Promise.all([
@@ -95,6 +92,12 @@ const getCategories = asyncHandler(async (req, res) => {
 
 const updateCategory = asyncHandler(async (req, res) => {
   const categoryId = req.params.id;
+
+  if (Object.keys(req.body).length === 0 && !req.file) {
+    const error = new Error("At least one field or image is required.");
+    error.status = 400;
+    throw error;
+  }
 
   const category = await Category.findById(categoryId);
 
@@ -143,7 +146,7 @@ const updateCategory = asyncHandler(async (req, res) => {
   }
 
   if (req.body.isActive !== undefined) {
-    const isActive = req.body.isActive === "true";
+    const isActive = req.body.isActive;
 
     category.isActive = isActive;
   }
