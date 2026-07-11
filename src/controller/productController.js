@@ -139,6 +139,7 @@ const addImage = asyncHandler(async (req, res) => {
 
   res.status(200).json({
     success: true,
+    message: "New image added. ",
     product,
   });
 });
@@ -363,6 +364,7 @@ const updateProduct = asyncHandler(async (req, res) => {
 
   res.status(200).json({
     success: true,
+    message: "Product details updated. ",
     product,
   });
 });
@@ -417,6 +419,7 @@ const updateImage = asyncHandler(async (req, res) => {
 
   res.status(200).json({
     success: true,
+    message: "Product image updated. ",
     product,
   });
 });
@@ -484,6 +487,7 @@ const deleteProduct = asyncHandler(async (req, res) => {
 
   res.status(200).json({
     success: true,
+    message: "Product deleted successfully. "
   });
 });
 
