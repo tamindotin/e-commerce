@@ -1,10 +1,15 @@
 const joi = require("joi");
+const { objectId } = require("../helper/objectIdValidator");
 
 const Label = Object.freeze({
   HOME: "HOME",
   OFFICE: "OFFICE",
   OTHER: "OTHER",
 });
+
+const addressIdValidator = joi.object({
+  id: objectId.required()
+})
 
 const label = joi
   .string()
@@ -42,4 +47,4 @@ const updateAddressSchema = joi.object({
   country: country,
 });
 
-module.exports = { addAddressSchema, updateAddressSchema };
+module.exports = { addAddressSchema, updateAddressSchema, addressIdValidator };
