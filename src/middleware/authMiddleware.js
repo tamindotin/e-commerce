@@ -12,7 +12,9 @@ const auth = asyncHandler((req, res, next) => {
 
   const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-  req.user = decoded.id;
+  const {id, role} = decoded
+
+  req.user = { id, role };
 
   next();
 });
