@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
+const { string } = require("joi");
 
 const userSchema = new mongoose.Schema(
   {
@@ -91,6 +92,12 @@ const userSchema = new mongoose.Schema(
     verified: {
       type: Boolean,
       default: false,
+    },
+
+    role: {
+      type: String,
+      enum: ["admin", "user"],
+      default: "user",
     },
   },
   { timestamps: true },

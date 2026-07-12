@@ -77,7 +77,7 @@ const login = asyncHandler(async (req, res) => {
     throw error;
   }
 
-  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+  const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
     expiresIn: "7d",
   });
 
@@ -267,7 +267,7 @@ const resetPassword = asyncHandler(async (req, res) => {
 });
 
 const changePassword = asyncHandler(async (req, res) => {
-  const id = req.user;
+  const id = req.user.id;
 
   const { password, newPassword } = req.body;
 

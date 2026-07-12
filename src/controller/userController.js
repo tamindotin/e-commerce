@@ -2,7 +2,7 @@ const User = require("../model/userModel");
 const asyncHandler = require("express-async-handler");
 
 const getProfile = asyncHandler(async (req, res) => {
-  const id = req.user;
+  const id = req.user.id;
 
   const user = await User.findById(id).select("name email verified");
 

@@ -6,7 +6,9 @@ const {
   apiLimiter,
   writeLimiter,
 } = require("../middleware/rateLimiterMiddleware");
-const parseProductFields = require("../middleware/parseJsonFields")
+const parseProductFields = require("../middleware/parseJsonFields");
+const auth = require("../middleware/authMiddleware");
+const authorize = require("../middleware/authorizeMiddleware");
 
 const {
   addProduct,
@@ -31,6 +33,8 @@ const {
 router.post(
   "/",
   writeLimiter,
+  auth,
+  authorize("admin"),
   upload.array("images", 5),
   parseProductFields(["specifications", "tags"]),
   validator({ body: addProductValidator }),
@@ -39,6 +43,8 @@ router.post(
 router.post(
   "/:productId",
   writeLimiter,
+  auth,
+  authorize("admin"),
   upload.single("image"),
   validator({ params: productIdValidator }),
   addImage,
@@ -58,6 +64,8 @@ router.get(
 router.patch(
   "/:productId",
   writeLimiter,
+  auth,
+  authorize("admin"),
   parseProductFields(["specifications", "tags"]),
   validator({ params: productIdValidator, body: updateProductValidator }),
   updateProduct,
@@ -65,6 +73,8 @@ router.patch(
 router.patch(
   "/:productId/image/:imageId",
   writeLimiter,
+  auth,
+  authorize("admin"),
   upload.single("image"),
   validator({ params: productImageIdValidator }),
   updateImage,
@@ -72,12 +82,16 @@ router.patch(
 router.delete(
   "/:productId/image/:imageId",
   writeLimiter,
+  auth,
+  authorize("admin"),
   validator({ params: productImageIdValidator }),
   deleteImage,
 );
 router.delete(
   "/:productId",
   writeLimiter,
+  auth,
+  authorize("admin"),
   validator({ params: productIdValidator }),
   deleteProduct,
 );

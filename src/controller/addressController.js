@@ -2,7 +2,7 @@ const User = require("../model/userModel");
 const asyncHandler = require("express-async-handler");
 
 const getAllAddresses = asyncHandler(async (req, res) => {
-  const id = req.user;
+  const id = req.user.id;
 
   const user = await User.findById(id).select("addresses");
 
@@ -26,7 +26,7 @@ const getAllAddresses = asyncHandler(async (req, res) => {
 });
 
 const addAddress = asyncHandler(async (req, res) => {
-  const id = req.user;
+  const id = req.user.id;
   const { label, street, city, state, pincode, country } = req.body;
 
   const user = await User.findById(id).select("addresses");
@@ -59,7 +59,7 @@ const addAddress = asyncHandler(async (req, res) => {
 });
 
 const setDefaultAddress = asyncHandler(async (req, res) => {
-  const id = req.user;
+  const id = req.user.id;
   const addressId = req.params.id;
 
   const user = await User.findById(id).select("addresses");
@@ -93,7 +93,7 @@ const setDefaultAddress = asyncHandler(async (req, res) => {
 });
 
 const deleteAddress = asyncHandler(async (req, res) => {
-  const id = req.user;
+  const id = req.user.id;
   const addressId = req.params.id;
 
   const user = await User.findById(id).select("addresses");
@@ -130,7 +130,7 @@ const deleteAddress = asyncHandler(async (req, res) => {
 });
 
 const updateAddress = asyncHandler(async (req, res) => {
-  const id = req.user;
+  const id = req.user.id;
   const addressId = req.params.id;
 
   const user = await User.findById(id).select("addresses");

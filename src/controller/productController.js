@@ -23,8 +23,6 @@ const addProduct = asyncHandler(async (req, res) => {
     tags,
   } = req.body;
 
-  console.log(specifications, tags)
-
   if (!req.files || req.files.length === 0) {
     const error = new Error("At least 1 image is required. ");
     error.status = 400;
@@ -155,8 +153,6 @@ const getProducts = asyncHandler(async (req, res) => {
   const page = req.query.page || 1;
   const skip = (page - 1) * limit;
 
-  console.log(limit, page)
-
   const {
     name,
     category,
@@ -226,15 +222,11 @@ const getProducts = asyncHandler(async (req, res) => {
     filters.price.$lte = maxPrice;
   }
 
-  console.log(tags)
-
   if (tags) {
     filters.tags = {
       $in: req.query.tags.split(",").map((tag) => tag.trim().toLowerCase()),
     };
   }
-
-  console.log(filters.tags)
 
   if (rating) {
     const rating = Number(req.query.rating);

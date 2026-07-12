@@ -6,6 +6,8 @@ const {
   apiLimiter,
   writeLimiter,
 } = require("../middleware/rateLimiterMiddleware");
+const auth = require("../middleware/authMiddleware");
+const authorize = require("../middleware/authorizeMiddleware");
 
 const {
   addCategory,
@@ -24,6 +26,8 @@ const {
 router.post(
   "/",
   writeLimiter,
+  auth,
+  authorize("admin"),
   upload.single("image"),
   validate({ body: addCategoryValidator }),
   addCategory,
@@ -39,6 +43,8 @@ router.get(
 router.patch(
   "/:id",
   writeLimiter,
+  auth,
+  authorize("admin"),
   upload.single("image"),
   validate({ params: categoryIdValidator, body: updateCategoryValidator }),
   updateCategory,
@@ -47,6 +53,8 @@ router.patch(
 router.delete(
   "/:id",
   writeLimiter,
+  auth,
+  authorize("admin"),
   validate({ params: categoryIdValidator }),
   deleteCategory,
 );
