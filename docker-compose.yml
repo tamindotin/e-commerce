@@ -1,0 +1,30 @@
+services:
+  redis:
+    image: redis:latest
+    ports:
+      - "17001:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+    networks:
+      - network
+
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "17002:27017"
+    environment:
+      MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASS}
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - network
+
+volumes:
+ redis-data:
+ mongo-data:
+
+networks:
+  network:
