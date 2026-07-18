@@ -9,6 +9,7 @@ import {
   resetPassword,
   changePassword,
   logout,
+  refresh
 } from "../controller/authController.js";
 
 import auth from "../middleware/authMiddleware.js";
@@ -78,5 +79,7 @@ router.put(
   validate({ body: changePasswordSchema }),
   changePassword,
 );
+
+router.post("/refresh", authLimiter, refresh);
 
 export default router;

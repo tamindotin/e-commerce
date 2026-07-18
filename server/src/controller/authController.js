@@ -1,10 +1,17 @@
-import User from "../model/userModel.js";
 import asyncHandler from "express-async-handler";
 import jwt from "jsonwebtoken";
+
+import redis from "../config/redis.js";
+import User from "../model/userModel.js";
 import generateOtp from "../utils/otpGenerator.js";
 import sendEmail from "../helper/sendEmail.js";
 import otpEmailTemplate from "../utils/otpEmailTemplate.js";
 import resetPasswordOtpTemplate from "../utils/resetPasswordOtpTemplate.js";
+import {
+  getAccessToken,
+  getRefreshToken,
+} from "../helper/generateJwtTokens.js";
+import getKey from "../helper/getRedisKey.js";
 
 const otpExpireMin = 5;
 
@@ -77,18 +84,30 @@ export const login = asyncHandler(async (req, res) => {
     throw error;
   }
 
-  const token = jwt.sign(
-    { id: user._id, role: user.role },
-    process.env.JWT_SECRET,
-    {
-      expiresIn: "7d",
-    },
+  const refreshToken = getRefreshToken(user);
+  const accessToken = getAccessToken(user);
+
+  const ACCESS_TOKEN_AGE = 10 * 60 * 1000; // ms
+  const REFRESH_TOKEN_AGE = 15 * 24 * 60 * 60 * 1000; // ms
+
+  const REFRESH_TOKEN_TTL = 15 * 24 * 60 * 60; // seconds
+
+  await redis.set(
+    getKey("refreshToken", user._id),
+    refreshToken,
+    "EX",
+    REFRESH_TOKEN_TTL,
   );
 
-  const cookieAge = 7 * 24 * 60 * 60 * 1000;
+  res.cookie("accessToken", accessToken, {
+    maxAge: ACCESS_TOKEN_AGE,
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+  });
 
-  res.cookie("token", token, {
-    maxAge: cookieAge,
+  res.cookie("refreshToken", refreshToken, {
+    maxAge: REFRESH_TOKEN_AGE,
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
@@ -305,3 +324,64 @@ export const logout = asyncHandler(async (req, res) => {
     message: "Logout successfully. ",
   });
 });
+
+export const refresh = async (req, res) => {
+  const token = req.cookies.refreshToken;
+
+  if (!token) {
+    const error = new Error("Unauthenticated user. ");
+    error.status = 401;
+    throw error;
+  }
+
+  const decoded = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
+
+  const existing = await redis.get(getKey("refreshToken", decoded.id));
+
+  if (existing !== token) {
+    const error = new Error("Unauthenticated user. ");
+    error.status = 401;
+    throw error;
+  }
+
+  const user = await User.findById(decoded.id).select("_id role");
+
+  if (!user) {
+    const error = new error("User not found")
+    error.status = 404
+    throw error
+  }
+
+  const refreshToken = getRefreshToken(user);
+  const accessToken = getAccessToken(user);
+
+  const ACCESS_TOKEN_AGE = 10 * 60 * 1000; // ms
+  const REFRESH_TOKEN_AGE = 15 * 24 * 60 * 60 * 1000; // ms
+
+  const REFRESH_TOKEN_TTL = 15 * 24 * 60 * 60; // seconds
+
+  await redis.set(
+    getKey("refreshToken", user._id),
+    refreshToken,
+    "EX",
+    REFRESH_TOKEN_TTL,
+  );
+
+  res.cookie("accessToken", accessToken, {
+    maxAge: ACCESS_TOKEN_AGE,
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+  });
+
+  res.cookie("refreshToken", refreshToken, {
+    maxAge: REFRESH_TOKEN_AGE,
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+  });
+
+  return res.status(200).json({
+    success: true
+  });
+};
