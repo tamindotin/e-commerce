@@ -84,8 +84,8 @@ export const login = asyncHandler(async (req, res) => {
     throw error;
   }
 
-  const refreshToken = getRefreshToken(user)
-  const accessToken = getAccessToken(user)
+  const refreshToken = getRefreshToken(user);
+  const accessToken = getAccessToken(user);
 
   const ACCESS_TOKEN_AGE = 10 * 60 * 1000; // ms
   const REFRESH_TOKEN_AGE = 15 * 24 * 60 * 60 * 1000; // ms
@@ -324,3 +324,64 @@ export const logout = asyncHandler(async (req, res) => {
     message: "Logout successfully. ",
   });
 });
+
+export const refresh = async (req, res) => {
+  const token = req.cookies.refreshToken;
+
+  if (!token) {
+    const error = new Error("Unauthenticated user. ");
+    error.status = 401;
+    throw error;
+  }
+
+  const decoded = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
+
+  const existing = await redis.get(getKey("refreshToken", decoded.id));
+
+  if (existing !== token) {
+    const error = new Error("Unauthenticated user. ");
+    error.status = 401;
+    throw error;
+  }
+
+  const user = await User.findById(decoded.id).select("_id role");
+
+  if (!user) {
+    const error = new error("User not found")
+    error.status = 404
+    throw error
+  }
+
+  const refreshToken = getRefreshToken(user);
+  const accessToken = getAccessToken(user);
+
+  const ACCESS_TOKEN_AGE = 10 * 60 * 1000; // ms
+  const REFRESH_TOKEN_AGE = 15 * 24 * 60 * 60 * 1000; // ms
+
+  const REFRESH_TOKEN_TTL = 15 * 24 * 60 * 60; // seconds
+
+  await redis.set(
+    getKey("refreshToken", user._id),
+    refreshToken,
+    "EX",
+    REFRESH_TOKEN_TTL,
+  );
+
+  res.cookie("accessToken", accessToken, {
+    maxAge: ACCESS_TOKEN_AGE,
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+  });
+
+  res.cookie("refreshToken", refreshToken, {
+    maxAge: REFRESH_TOKEN_AGE,
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+  });
+
+  return res.status(200).json({
+    success: true
+  });
+};
