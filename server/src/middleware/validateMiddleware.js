@@ -8,7 +8,7 @@ const validate = (schemas) => {
 
         if (error) throw error;
 
-        req.body = value;
+        Object.assign(req.query, value);
       }
 
       if (schemas.params) {
@@ -18,7 +18,7 @@ const validate = (schemas) => {
 
         if (error) throw error;
 
-        req.params = value;
+        Object.assign(req.query, value);
       }
 
       if (schemas.query) {
@@ -28,16 +28,21 @@ const validate = (schemas) => {
 
         if (error) throw error;
 
-        req.query = value;
+        Object.assign(req.query, value);
       }
 
       next();
     } catch (error) {
-      const err = new Error(
-        error.details.map((detail) => detail.message).join(", "),
-      );
-      err.status = 400;
-      next(err);
+      if (error.isJoi) {
+        return next(
+          Object.assign(
+            new Error(error.details.map((d) => d.message).join(", ")),
+            { status: 400 },
+          ),
+        );
+      }
+
+      next(error);
     }
   };
 };
