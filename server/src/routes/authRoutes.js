@@ -1,4 +1,6 @@
-const {
+import { Router } from "express";
+
+import {
   register,
   login,
   verifyAccount,
@@ -7,18 +9,18 @@ const {
   resetPassword,
   changePassword,
   logout,
-} = require("../controller/authController");
+} from "../controller/authController.js";
 
-const auth = require("../middleware/authMiddleware");
+import auth from "../middleware/authMiddleware.js";
 
-const {
+import {
   authLimiter,
   otpLimiter,
-} = require("../middleware/rateLimiterMiddleware");
+} from "../middleware/rateLimiterMiddleware.js";
 
-const validate = require("../middleware/validateMiddleware");
+import validate from "../middleware/validateMiddleware.js";
 
-const {
+import {
   registerSchema,
   loginSchema,
   verifyAccountSchema,
@@ -26,9 +28,9 @@ const {
   forgotPasswordSchema,
   resetPasswordSchema,
   changePasswordSchema,
-} = require("../validator/authValidator");
+} from "../validator/authValidator.js";
 
-const router = require("express").Router();
+const router = Router();
 
 router.post(
   "/register",
@@ -36,15 +38,18 @@ router.post(
   validate({ body: registerSchema }),
   register,
 );
+
 router.post("/login", authLimiter, validate({ body: loginSchema }), login);
+
 router.post("/logout", auth, logout);
 
 router.post(
   "/verify-account",
   authLimiter,
-  validate(verifyAccountSchema),
+  validate({ body: verifyAccountSchema }),
   verifyAccount,
 );
+
 router.post(
   "/resend-otp",
   otpLimiter,
@@ -58,12 +63,14 @@ router.post(
   validate({ body: forgotPasswordSchema }),
   forgotPassword,
 );
+
 router.post(
   "/reset-password",
   authLimiter,
   validate({ body: resetPasswordSchema }),
   resetPassword,
 );
+
 router.put(
   "/change-password",
   authLimiter,
@@ -72,4 +79,4 @@ router.put(
   changePassword,
 );
 
-module.exports = router;
+export default router;

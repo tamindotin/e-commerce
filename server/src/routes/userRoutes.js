@@ -1,9 +1,11 @@
-const { getProfile } = require("../controller/userController");
-const auth = require("../middleware/authMiddleware");
-const { apiLimiter } = require("../middleware/rateLimiterMiddleware");
+import { Router } from "express";
 
-const router = require("express").Router();
+import { getProfile } from "../controller/userController.js";
+import auth from "../middleware/authMiddleware.js";
+import { apiLimiter } from "../middleware/rateLimiterMiddleware.js";
+
+const router = Router();
 
 router.get("/", apiLimiter, auth, getProfile);
 
-module.exports = router;
+export default router;

@@ -1,27 +1,29 @@
-const router = require("express").Router();
+import { Router } from "express";
 
-const upload = require("../middleware/multerMiddleware");
-const validate = require("../middleware/validateMiddleware");
-const {
+import upload from "../middleware/multerMiddleware.js";
+import validate from "../middleware/validateMiddleware.js";
+import {
   apiLimiter,
   writeLimiter,
-} = require("../middleware/rateLimiterMiddleware");
-const auth = require("../middleware/authMiddleware");
-const authorize = require("../middleware/authorizeMiddleware");
+} from "../middleware/rateLimiterMiddleware.js";
+import auth from "../middleware/authMiddleware.js";
+import authorize from "../middleware/authorizeMiddleware.js";
 
-const {
+import {
   addCategory,
   getCategories,
   updateCategory,
   deleteCategory,
-} = require("../controller/categoryController");
+} from "../controller/categoryController.js";
 
-const {
+import {
   addCategoryValidator,
   updateCategoryValidator,
   categoryIdValidator,
   getCategoriesQueryValidator,
-} = require("../validator/categoryValidator");
+} from "../validator/categoryValidator.js";
+
+const router = Router();
 
 router.post(
   "/",
@@ -59,4 +61,4 @@ router.delete(
   deleteCategory,
 );
 
-module.exports = router;
+export default router;

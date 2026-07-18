@@ -1,7 +1,5 @@
-const joi = require("joi");
+import Joi from "joi";
 
-const objectId = joi.string().hex().length(24);
+const objectId = Joi.string().hex().length(24);
 
-module.exports = {
-  objectId,
-};
+export default objectId;

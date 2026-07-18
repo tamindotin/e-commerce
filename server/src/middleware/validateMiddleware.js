@@ -42,4 +42,4 @@ const validate = (schemas) => {
   };
 };
 
-module.exports = validate;
+export default validate;

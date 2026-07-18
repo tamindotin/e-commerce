@@ -1,16 +1,16 @@
-const router = require("express").Router();
+import { Router } from "express";
 
-const upload = require("../middleware/multerMiddleware");
-const validator = require("../middleware/validateMiddleware");
-const {
+import upload from "../middleware/multerMiddleware.js";
+import validator from "../middleware/validateMiddleware.js";
+import {
   apiLimiter,
   writeLimiter,
-} = require("../middleware/rateLimiterMiddleware");
-const parseProductFields = require("../middleware/parseJsonFields");
-const auth = require("../middleware/authMiddleware");
-const authorize = require("../middleware/authorizeMiddleware");
+} from "../middleware/rateLimiterMiddleware.js";
+import parseProductFields from "../middleware/parseJsonFields.js";
+import auth from "../middleware/authMiddleware.js";
+import authorize from "../middleware/authorizeMiddleware.js";
 
-const {
+import {
   addProduct,
   getProducts,
   getProduct,
@@ -19,16 +19,18 @@ const {
   deleteImage,
   addImage,
   deleteProduct,
-} = require("../controller/productController");
+} from "../controller/productController.js";
 
-const {
+import {
   addProductValidator,
   updateProductValidator,
   getProductsQueryValidator,
   productIdValidator,
   imageIdValidator,
   productImageIdValidator,
-} = require("../validator/productValidator");
+} from "../validator/productValidator.js";
+
+const router = Router();
 
 router.post(
   "/",
@@ -40,6 +42,7 @@ router.post(
   validator({ body: addProductValidator }),
   addProduct,
 );
+
 router.post(
   "/:productId",
   writeLimiter,
@@ -49,18 +52,21 @@ router.post(
   validator({ params: productIdValidator }),
   addImage,
 );
+
 router.get(
   "/",
   apiLimiter,
   validator({ query: getProductsQueryValidator }),
   getProducts,
 );
+
 router.get(
   "/:productId",
   apiLimiter,
   validator({ params: productIdValidator }),
   getProduct,
 );
+
 router.patch(
   "/:productId",
   writeLimiter,
@@ -70,6 +76,7 @@ router.patch(
   validator({ params: productIdValidator, body: updateProductValidator }),
   updateProduct,
 );
+
 router.patch(
   "/:productId/image/:imageId",
   writeLimiter,
@@ -79,6 +86,7 @@ router.patch(
   validator({ params: productImageIdValidator }),
   updateImage,
 );
+
 router.delete(
   "/:productId/image/:imageId",
   writeLimiter,
@@ -87,6 +95,7 @@ router.delete(
   validator({ params: productImageIdValidator }),
   deleteImage,
 );
+
 router.delete(
   "/:productId",
   writeLimiter,
@@ -96,4 +105,4 @@ router.delete(
   deleteProduct,
 );
 
-module.exports = router;
+export default router;

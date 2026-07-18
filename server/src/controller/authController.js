@@ -1,14 +1,14 @@
-const User = require("../model/userModel");
-const asyncHandler = require("express-async-handler");
-const jwt = require("jsonwebtoken");
-const generateOtp = require("../utils/otpGenerator");
-const sendEmail = require("../helper/sendEmail");
-const otpEmailTemplate = require("../utils/otpEmailTemplate");
-const resetPasswordOtpTemplate = require("../utils/resetPasswordOtpTemplate");
+import User from "../model/userModel.js";
+import asyncHandler from "express-async-handler";
+import jwt from "jsonwebtoken";
+import generateOtp from "../utils/otpGenerator.js";
+import sendEmail from "../helper/sendEmail.js";
+import otpEmailTemplate from "../utils/otpEmailTemplate.js";
+import resetPasswordOtpTemplate from "../utils/resetPasswordOtpTemplate.js";
 
 const otpExpireMin = 5;
 
-const register = asyncHandler(async (req, res) => {
+export const register = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
 
   if (!name || !email || !password) {
@@ -46,7 +46,7 @@ const register = asyncHandler(async (req, res) => {
   });
 });
 
-const login = asyncHandler(async (req, res) => {
+export const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -77,9 +77,13 @@ const login = asyncHandler(async (req, res) => {
     throw error;
   }
 
-  const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
-    expiresIn: "7d",
-  });
+  const token = jwt.sign(
+    { id: user._id, role: user.role },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: "7d",
+    },
+  );
 
   const cookieAge = 7 * 24 * 60 * 60 * 1000;
 
@@ -96,7 +100,7 @@ const login = asyncHandler(async (req, res) => {
   });
 });
 
-const verifyAccount = asyncHandler(async (req, res) => {
+export const verifyAccount = asyncHandler(async (req, res) => {
   const { email, otp } = req.body;
 
   const user = await User.findOne({ email }).select("+otp +otpExpiresAt");
@@ -139,7 +143,7 @@ const verifyAccount = asyncHandler(async (req, res) => {
   });
 });
 
-const resendOtp = asyncHandler(async (req, res) => {
+export const resendOtp = asyncHandler(async (req, res) => {
   const { email } = req.body;
 
   const user = await User.findOne({ email });
@@ -176,7 +180,7 @@ const resendOtp = asyncHandler(async (req, res) => {
   });
 });
 
-const forgotPassword = asyncHandler(async (req, res) => {
+export const forgotPassword = asyncHandler(async (req, res) => {
   const { email } = req.body;
 
   const user = await User.findOne({ email });
@@ -213,7 +217,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
   });
 });
 
-const resetPassword = asyncHandler(async (req, res) => {
+export const resetPassword = asyncHandler(async (req, res) => {
   const { email, otp, password } = req.body;
 
   const user = await User.findOne({ email }).select(
@@ -266,7 +270,7 @@ const resetPassword = asyncHandler(async (req, res) => {
   });
 });
 
-const changePassword = asyncHandler(async (req, res) => {
+export const changePassword = asyncHandler(async (req, res) => {
   const id = req.user.id;
 
   const { password, newPassword } = req.body;
@@ -289,7 +293,7 @@ const changePassword = asyncHandler(async (req, res) => {
   });
 });
 
-const logout = asyncHandler(async (req, res) => {
+export const logout = asyncHandler(async (req, res) => {
   res.clearCookie("token", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
@@ -301,14 +305,3 @@ const logout = asyncHandler(async (req, res) => {
     message: "Logout successfully. ",
   });
 });
-
-module.exports = {
-  register,
-  login,
-  verifyAccount,
-  resendOtp,
-  forgotPassword,
-  resetPassword,
-  changePassword,
-  logout,
-};

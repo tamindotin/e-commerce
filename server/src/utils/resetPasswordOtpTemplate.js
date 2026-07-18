@@ -96,4 +96,4 @@ const resetPasswordOtpTemplate = (name, otp) => {
   `;
 };
 
-module.exports = resetPasswordOtpTemplate;
+export default resetPasswordOtpTemplate;

@@ -1,9 +1,8 @@
-const joi = require("joi");
+import Joi from "joi";
 
-const email = joi.string().email().trim().required();
+const email = Joi.string().email().trim().required();
 
-const password = joi
-  .string()
+const password = Joi.string()
   .min(8)
   .max(32)
   .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).+$/)
@@ -13,52 +12,50 @@ const password = joi
       "Password must contain uppercase, lowercase, number and special character.",
   });
 
-const confirmPassword = joi
-  .any()
-  .valid(joi.ref("password"))
+const confirmPassword = Joi.any()
+  .valid(Joi.ref("password"))
   .required()
   .messages({
     "any.only": "Passwords do not match.",
   });
 
-const otp = joi.string().length(6).pattern(/^\d+$/).required();
+const otp = Joi.string().length(6).pattern(/^\d+$/).required();
 
-const registerSchema = joi.object({
-  name: joi.string().min(3).max(15).trim().required(),
+export const registerSchema = Joi.object({
+  name: Joi.string().min(3).max(15).trim().required(),
   email: email,
   password: password,
   confirmPassword: confirmPassword,
 });
 
-const loginSchema = joi.object({
+export const loginSchema = Joi.object({
   email: email,
   password: password,
 });
 
-const verifyAccountSchema = joi.object({
+export const verifyAccountSchema = Joi.object({
   email: email,
   otp: otp,
 });
 
-const forgotPasswordSchema = joi.object({
+export const forgotPasswordSchema = Joi.object({
   email: email,
 });
 
-const resendOtpSchema = joi.object({
+export const resendOtpSchema = Joi.object({
   email: email,
 });
 
-const resetPasswordSchema = joi.object({
+export const resetPasswordSchema = Joi.object({
   email: email,
   password: password,
   confirmPassword: confirmPassword,
   otp: otp,
 });
 
-const changePasswordSchema = joi.object({
+export const changePasswordSchema = Joi.object({
   password: password,
-  newPassword: joi
-    .string()
+  newPassword: Joi.string()
     .min(8)
     .max(32)
     .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).+$/)
@@ -67,21 +64,11 @@ const changePasswordSchema = joi.object({
       "string.pattern.base":
         "Password must contain uppercase, lowercase, number and special character.",
     })
-    .invalid(joi.ref("password"))
+    .invalid(Joi.ref("password"))
     .messages({
       "any.invalid": "Current password and new password cannot be same.",
     }),
-  confirmPassword: joi.any().valid(joi.ref("newPassword")).required().messages({
+  confirmPassword: Joi.any().valid(Joi.ref("newPassword")).required().messages({
     "any.only": "Passwords do not match.",
   }),
 });
-
-module.exports = {
-  registerSchema,
-  loginSchema,
-  verifyAccountSchema,
-  forgotPasswordSchema,
-  resendOtpSchema,
-  resetPasswordSchema,
-  changePasswordSchema,
-};

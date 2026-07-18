@@ -1,5 +1,5 @@
-const asyncHandler = require("express-async-handler");
-const jwt = require("jsonwebtoken");
+import asyncHandler from "express-async-handler";
+import jwt from "jsonwebtoken";
 
 const auth = asyncHandler((req, res, next) => {
   const token = req.cookies.token;
@@ -12,11 +12,11 @@ const auth = asyncHandler((req, res, next) => {
 
   const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-  const {id, role} = decoded
+  const { id, role } = decoded;
 
   req.user = { id, role };
 
   next();
 });
 
-module.exports = auth;
+export default auth;

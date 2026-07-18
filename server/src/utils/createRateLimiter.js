@@ -1,4 +1,4 @@
-const rateLimit = require("express-rate-limit");
+import rateLimit from "express-rate-limit";
 
 const createRateLimiter = ({ windowMs, max, message = "Too many requests." }) =>
   rateLimit({
@@ -12,4 +12,4 @@ const createRateLimiter = ({ windowMs, max, message = "Too many requests." }) =>
     },
   });
 
-module.exports = createRateLimiter;
+export default createRateLimiter;

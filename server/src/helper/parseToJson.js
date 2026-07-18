@@ -8,4 +8,4 @@ const parseToJson = (field) => {
   }
 };
 
-module.exports = parseToJson;
+export default parseToJson;

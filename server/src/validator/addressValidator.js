@@ -1,5 +1,5 @@
-const joi = require("joi");
-const { objectId } = require("../helper/objectIdValidator");
+import Joi from "joi";
+import objectId from "../helper/objectIdValidator.js";
 
 const Label = Object.freeze({
   HOME: "HOME",
@@ -7,29 +7,28 @@ const Label = Object.freeze({
   OTHER: "OTHER",
 });
 
-const addressIdValidator = joi.object({
-  id: objectId.required()
-})
-
-const label = joi
-  .string()
+const label = Joi.string()
   .uppercase()
   .valid(...Object.values(Label))
   .messages({
     "any.only": "Only HOME, OFFICE and OTHER are allowed as labels.",
   });
 
-const street = joi.string().min(3).max(30);
+const street = Joi.string().min(3).max(30);
 
-const city = joi.string().min(3).max(30);
+const city = Joi.string().min(3).max(30);
 
-const state = joi.string().min(3).max(30);
+const state = Joi.string().min(3).max(30);
 
-const pincode = joi.string().length(6).pattern(/^\d+$/);
+const pincode = Joi.string().length(6).pattern(/^\d+$/);
 
-const country = joi.string().min(3).max(15);
+const country = Joi.string().min(3).max(15);
 
-const addAddressSchema = joi.object({
+export const addressIdValidator = Joi.object({
+  id: objectId.required(),
+});
+
+export const addAddressSchema = Joi.object({
   label: label.required(),
   street: street.required(),
   city: city.required(),
@@ -38,7 +37,7 @@ const addAddressSchema = joi.object({
   country: country.required(),
 });
 
-const updateAddressSchema = joi.object({
+export const updateAddressSchema = Joi.object({
   label: label,
   street: street,
   city: city,
@@ -46,5 +45,3 @@ const updateAddressSchema = joi.object({
   pincode: pincode,
   country: country,
 });
-
-module.exports = { addAddressSchema, updateAddressSchema, addressIdValidator };

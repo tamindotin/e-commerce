@@ -1,6 +1,5 @@
-const mongoose = require("mongoose");
-const bcrypt = require("bcrypt");
-const { string } = require("joi");
+import mongoose from "mongoose";
+import bcrypt from "bcrypt";
 
 const userSchema = new mongoose.Schema(
   {
@@ -129,4 +128,4 @@ userSchema.methods.compareOtp = async function (otp) {
 
 const User = mongoose.model("User", userSchema);
 
-module.exports = User;
+export default User;

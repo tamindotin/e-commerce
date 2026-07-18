@@ -1,4 +1,4 @@
-const slugify = require("slugify");
+import slugify from "slugify";
 
 const getSlug = (name) => {
   return slugify(name, {
@@ -7,4 +7,4 @@ const getSlug = (name) => {
   });
 };
 
-module.exports = getSlug;
+export default getSlug;

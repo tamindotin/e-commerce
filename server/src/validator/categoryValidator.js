@@ -1,42 +1,42 @@
-const joi = require("joi");
-const {objectId} = require("../helper/objectIdValidator");
+import Joi from "joi";
+import objectId from "../helper/objectIdValidator.js";
 
-const name = joi.string().min(3).max(50).trim();
-const isActive = joi.boolean();
+const name = Joi.string().min(3).max(50).trim();
+const isActive = Joi.boolean();
 
-const addCategoryValidator = joi.object({
+export const addCategoryValidator = Joi.object({
   name: name.required(),
 });
 
-const updateCategoryValidator = joi.object({
+export const updateCategoryValidator = Joi.object({
   name,
   isActive,
 });
 
-const categoryIdValidator = joi.object({
+export const categoryIdValidator = Joi.object({
   id: objectId.required(),
 });
 
-const getCategoriesQueryValidator = joi.object({
+export const getCategoriesQueryValidator = Joi.object({
   name,
-  slug: joi
-    .string()
+
+  slug: Joi.string()
     .min(3)
     .max(30)
     .pattern(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
 
   isActive,
 
-  sort: joi.valid("name", "-name", "slug", "-slug", "createdAt", "-createdAt").default("-createdAt"),
+  sort: Joi.valid(
+    "name",
+    "-name",
+    "slug",
+    "-slug",
+    "createdAt",
+    "-createdAt",
+  ).default("-createdAt"),
 
-  page: joi.number().integer().min(1).default(1),
+  page: Joi.number().integer().min(1).default(1),
 
-  limit: joi.number().integer().min(1).max(100).default(10),
+  limit: Joi.number().integer().min(1).max(100).default(10),
 });
-
-module.exports = {
-  categoryIdValidator,
-  addCategoryValidator,
-  updateCategoryValidator,
-  getCategoriesQueryValidator,
-};

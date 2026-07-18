@@ -1,25 +1,27 @@
-const router = require("express").Router();
+import { Router } from "express";
 
-const auth = require("../middleware/authMiddleware");
-const {
+import auth from "../middleware/authMiddleware.js";
+import {
   writeLimiter,
   apiLimiter,
-} = require("../middleware/rateLimiterMiddleware");
-const validate = require("../middleware/validateMiddleware");
+} from "../middleware/rateLimiterMiddleware.js";
+import validate from "../middleware/validateMiddleware.js";
 
-const {
+import {
   getAllAddresses,
   addAddress,
   setDefaultAddress,
   deleteAddress,
   updateAddress,
-} = require("../controller/addressController");
+} from "../controller/addressController.js";
 
-const {
+import {
   addAddressSchema,
   updateAddressSchema,
   addressIdValidator,
-} = require("../validator/addressValidator");
+} from "../validator/addressValidator.js";
+
+const router = Router();
 
 router.get("/", apiLimiter, auth, getAllAddresses);
 
@@ -55,4 +57,4 @@ router.put(
   updateAddress,
 );
 
-module.exports = router;
+export default router;

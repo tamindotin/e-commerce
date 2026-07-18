@@ -1,4 +1,4 @@
-const parseToJson = require("../helper/parseToJson")
+import parseToJson from "../helper/parseToJson.js";
 
 const parseProductFields = (fields) => (req, res, next) => {
   for (const field of fields) {
@@ -6,7 +6,7 @@ const parseProductFields = (fields) => (req, res, next) => {
       req.body[field] = parseToJson(req.body[field]);
     }
   }
-  next()
-}
+  next();
+};
 
-module.exports = parseProductFields
+export default parseProductFields;

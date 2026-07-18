@@ -80,4 +80,4 @@ const otpEmailTemplate = (name, otp) => {
   `;
 };
 
-module.exports = otpEmailTemplate;
+export default otpEmailTemplate;

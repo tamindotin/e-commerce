@@ -1,4 +1,4 @@
-const multer = require("multer");
+import multer from "multer";
 
 const fileFilter = (req, file, cb) => {
   if (file.mimetype.startsWith("image/")) {
@@ -18,4 +18,4 @@ const upload = multer({
   },
 });
 
-module.exports = upload;
+export default upload;

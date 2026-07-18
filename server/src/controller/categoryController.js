@@ -1,11 +1,11 @@
-const Category = require("../model/categoryModel");
-const Product = require("../model/productModel");
-const asyncHandler = require("express-async-handler");
-const slugify = require("slugify");
-const cloudinary = require("../config/cloudinary");
-const fs = require("fs/promises");
+import Category from "../model/categoryModel.js";
+import Product from "../model/productModel.js";
+import asyncHandler from "express-async-handler";
+import slugify from "slugify";
+import cloudinary from "../config/cloudinary.js";
+import fs from "fs/promises";
 
-const addCategory = asyncHandler(async (req, res) => {
+export const addCategory = asyncHandler(async (req, res) => {
   const { name } = req.body;
 
   const slug = slugify(name, {
@@ -46,7 +46,7 @@ const addCategory = asyncHandler(async (req, res) => {
   });
 });
 
-const getCategories = asyncHandler(async (req, res) => {
+export const getCategories = asyncHandler(async (req, res) => {
   const filters = {};
 
   if (req.query.name) {
@@ -64,7 +64,7 @@ const getCategories = asyncHandler(async (req, res) => {
     filters.isActive = req.query.isActive;
   }
 
-  const sort = req.query.sort
+  const sort = req.query.sort;
 
   const page = req.query.page;
   const limit = req.query.limit;
@@ -90,7 +90,7 @@ const getCategories = asyncHandler(async (req, res) => {
   });
 });
 
-const updateCategory = asyncHandler(async (req, res) => {
+export const updateCategory = asyncHandler(async (req, res) => {
   const categoryId = req.params.id;
 
   if (Object.keys(req.body).length === 0 && !req.file) {
@@ -160,7 +160,7 @@ const updateCategory = asyncHandler(async (req, res) => {
   });
 });
 
-const deleteCategory = asyncHandler(async (req, res) => {
+export const deleteCategory = asyncHandler(async (req, res) => {
   const categoryId = req.params.id;
 
   const category = await Category.findById(categoryId);
@@ -190,5 +190,3 @@ const deleteCategory = asyncHandler(async (req, res) => {
     message: "Category deleted successfully. ",
   });
 });
-
-module.exports = { addCategory, getCategories, updateCategory, deleteCategory };

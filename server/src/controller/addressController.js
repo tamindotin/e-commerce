@@ -1,7 +1,7 @@
-const User = require("../model/userModel");
-const asyncHandler = require("express-async-handler");
+import User from "../model/userModel.js";
+import asyncHandler from "express-async-handler";
 
-const getAllAddresses = asyncHandler(async (req, res) => {
+export const getAllAddresses = asyncHandler(async (req, res) => {
   const id = req.user.id;
 
   const user = await User.findById(id).select("addresses");
@@ -25,7 +25,7 @@ const getAllAddresses = asyncHandler(async (req, res) => {
   });
 });
 
-const addAddress = asyncHandler(async (req, res) => {
+export const addAddress = asyncHandler(async (req, res) => {
   const id = req.user.id;
   const { label, street, city, state, pincode, country } = req.body;
 
@@ -58,7 +58,7 @@ const addAddress = asyncHandler(async (req, res) => {
   });
 });
 
-const setDefaultAddress = asyncHandler(async (req, res) => {
+export const setDefaultAddress = asyncHandler(async (req, res) => {
   const id = req.user.id;
   const addressId = req.params.id;
 
@@ -92,7 +92,7 @@ const setDefaultAddress = asyncHandler(async (req, res) => {
   });
 });
 
-const deleteAddress = asyncHandler(async (req, res) => {
+export const deleteAddress = asyncHandler(async (req, res) => {
   const id = req.user.id;
   const addressId = req.params.id;
 
@@ -129,7 +129,7 @@ const deleteAddress = asyncHandler(async (req, res) => {
   });
 });
 
-const updateAddress = asyncHandler(async (req, res) => {
+export const updateAddress = asyncHandler(async (req, res) => {
   const id = req.user.id;
   const addressId = req.params.id;
 
@@ -176,11 +176,3 @@ const updateAddress = asyncHandler(async (req, res) => {
     addresses: user.addresses,
   });
 });
-
-module.exports = {
-  getAllAddresses,
-  addAddress,
-  setDefaultAddress,
-  deleteAddress,
-  updateAddress,
-};

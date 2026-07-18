@@ -1,15 +1,15 @@
-const Product = require("../model/productModel");
-const Category = require("../model/categoryModel");
-const asyncHandler = require("express-async-handler");
-const slugify = require("slugify");
-const cloudinary = require("../config/cloudinary");
-const fs = require("fs/promises");
-const cleanupImages = require("../helper/imageCleanup");
-const getSlug = require("../helper/getSlug");
-const parseToJson = require("../helper/parseToJson");
-const checkDuplicate = require("../helper/checkDuplicate");
+import Product from "../model/productModel.js";
+import Category from "../model/categoryModel.js";
+import asyncHandler from "express-async-handler";
+import slugify from "slugify";
+import cloudinary from "../config/cloudinary.js";
+import fs from "fs/promises";
+import cleanupImages from "../helper/imageCleanup.js";
+import getSlug from "../helper/getSlug.js";
+import parseToJson from "../helper/parseToJson.js";
+import checkDuplicate from "../helper/checkDuplicate.js";
 
-const addProduct = asyncHandler(async (req, res) => {
+export const addProduct = asyncHandler(async (req, res) => {
   const {
     name,
     description,
@@ -101,7 +101,7 @@ const addProduct = asyncHandler(async (req, res) => {
   });
 });
 
-const addImage = asyncHandler(async (req, res) => {
+export const addImage = asyncHandler(async (req, res) => {
   const MAX_IMAGES = 5;
 
   const id = req.params.productId;
@@ -148,7 +148,7 @@ const addImage = asyncHandler(async (req, res) => {
   });
 });
 
-const getProducts = asyncHandler(async (req, res) => {
+export const getProducts = asyncHandler(async (req, res) => {
   const limit = req.query.limit || 10;
   const page = req.query.page || 1;
   const skip = (page - 1) * limit;
@@ -269,7 +269,7 @@ const getProducts = asyncHandler(async (req, res) => {
   });
 });
 
-const getProduct = asyncHandler(async (req, res) => {
+export const getProduct = asyncHandler(async (req, res) => {
   const id = req.params.productId;
 
   const product = await Product.findById(id).populate("category");
@@ -286,7 +286,7 @@ const getProduct = asyncHandler(async (req, res) => {
   });
 });
 
-const updateProduct = asyncHandler(async (req, res) => {
+export const updateProduct = asyncHandler(async (req, res) => {
   const id = req.params.productId;
 
   const product = await Product.findById(id);
@@ -352,7 +352,7 @@ const updateProduct = asyncHandler(async (req, res) => {
   });
 });
 
-const updateImage = asyncHandler(async (req, res) => {
+export const updateImage = asyncHandler(async (req, res) => {
   const productId = req.params.productId;
   const imageId = req.params.imageId;
 
@@ -407,7 +407,7 @@ const updateImage = asyncHandler(async (req, res) => {
   });
 });
 
-const deleteImage = asyncHandler(async (req, res) => {
+export const deleteImage = asyncHandler(async (req, res) => {
   const productId = req.params.productId;
   const imageId = req.params.imageId;
 
@@ -451,7 +451,7 @@ const deleteImage = asyncHandler(async (req, res) => {
   });
 });
 
-const deleteProduct = asyncHandler(async (req, res) => {
+export const deleteProduct = asyncHandler(async (req, res) => {
   const id = req.params.productId;
 
   const product = await Product.findById(id).select("images");
@@ -473,14 +473,3 @@ const deleteProduct = asyncHandler(async (req, res) => {
     message: "Product deleted successfully. ",
   });
 });
-
-module.exports = {
-  addProduct,
-  addImage,
-  getProducts,
-  getProduct,
-  updateProduct,
-  updateImage,
-  deleteImage,
-  deleteProduct,
-};

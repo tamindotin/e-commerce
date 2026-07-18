@@ -13,4 +13,4 @@ const checkDuplicate = async (model, field, response, id) => {
   }
 };
 
-module.exports = checkDuplicate;
+export default checkDuplicate;

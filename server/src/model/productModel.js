@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const imageSchema = new mongoose.Schema(
   {
@@ -122,4 +122,4 @@ productSchema.index({ name: "text", description: "text" });
 productSchema.index({ category: 1 });
 productSchema.index({ price: 1 });
 
-module.exports = mongoose.model("Product", productSchema);
+export default mongoose.model("Product", productSchema);
