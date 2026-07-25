@@ -1,0 +1,90 @@
+:root {
+  /* Radius */
+  --radius: 1rem;
+
+  /* Base */
+  --background: oklch(0.11 0.015 265);
+  --foreground: oklch(0.98 0.01 260);
+
+  /* Cards */
+  --card: oklch(0.17 0.02 265);
+  --card-foreground: var(--foreground);
+
+  /* Popovers */
+  --popover: oklch(0.17 0.02 265);
+  --popover-foreground: var(--foreground);
+
+  /* Brand — punchier neon violet/magenta, more saturated for a "gaming" feel */
+  --primary: oklch(0.66 0.28 300);
+  --primary-foreground: oklch(0.99 0 0);
+
+  /* Secondary */
+  --secondary: oklch(0.24 0.025 265);
+  --secondary-foreground: var(--foreground);
+
+  /* Muted */
+  --muted: oklch(0.22 0.02 265);
+  --muted-foreground: oklch(0.72 0.02 260);
+
+  /* Accent (electric cyan) */
+  --accent: oklch(0.8 0.19 210);
+  --accent-foreground: oklch(0.12 0.01 260);
+
+  /* Danger */
+  --destructive: oklch(0.63 0.24 25);
+  --destructive-foreground: white;
+
+  /* Inputs */
+  --border: oklch(0.32 0.03 265);
+  --input: oklch(0.25 0.025 265);
+  --ring: var(--primary);
+
+  /* Charts */
+  --chart-1: oklch(0.66 0.28 300);
+  --chart-2: oklch(0.8 0.19 210);
+  --chart-3: oklch(0.72 0.18 145);
+  --chart-4: oklch(0.78 0.19 85);
+  --chart-5: oklch(0.66 0.22 25);
+
+  /* Sidebar */
+  --sidebar: oklch(0.15 0.02 265);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: oklch(0.22 0.02 265);
+  --sidebar-accent-foreground: var(--foreground);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
+
+  /* ---------------------------------------------------- */
+  /* NEW: Semantic text colors (store/status/UI language)  */
+  /* ---------------------------------------------------- */
+
+  /* Links & interactive text */
+  --text-link: oklch(0.78 0.19 210);
+  --text-link-hover: oklch(0.85 0.19 210);
+
+  /* Prices & commerce */
+  --text-price: oklch(0.95 0.01 260);       /* current price, high contrast */
+  --text-price-original: oklch(0.55 0.02 260); /* struck-through old price */
+  --text-sale: oklch(0.72 0.22 25);          /* "-40% OFF" tags */
+  --text-discount-badge: oklch(0.75 0.2 140); /* savings amount, green */
+
+  /* Stock / order status */
+  --text-success: oklch(0.75 0.18 145);      /* in stock, order confirmed */
+  --text-warning: oklch(0.8 0.17 85);        /* low stock */
+  --text-danger: oklch(0.68 0.22 25);        /* out of stock, errors */
+  --text-info: oklch(0.78 0.15 230);         /* shipping notices, tips */
+
+  /* Item rarity tiers — common in gaming storefronts (skins, loot, DLC tiers) */
+  --text-rarity-common: oklch(0.75 0.01 260);
+  --text-rarity-uncommon: oklch(0.75 0.16 145);
+  --text-rarity-rare: oklch(0.72 0.19 240);
+  --text-rarity-epic: oklch(0.68 0.24 300);
+  --text-rarity-legendary: oklch(0.78 0.2 70);
+
+  /* Headings vs body — subtle differentiation for hierarchy */
+  --text-heading: oklch(0.98 0.01 260);
+  --text-body: oklch(0.85 0.015 260);
+  --text-subtle: oklch(0.6 0.015 260);
+}
