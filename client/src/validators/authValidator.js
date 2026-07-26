@@ -24,12 +24,9 @@ export const registerSchema = z
     password: passwordRule,
     confirmPassword: z.string(),
   })
-  .refine((data) => {
-    (data.password === data.confirmPassword,
-      {
-        message: "Password do not match",
-        path: ["confirmPassword"],
-      });
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Password do not match",
+    path: ["confirmPassword"],
   });
 
 export const otpSchema = z.object({
@@ -42,10 +39,7 @@ export const resetPasswordSchema = z
     password: passwordRule,
     confirmPassword: z.string(),
   })
-  .refine((data) => {
-    (data.password === data.confirmPassword,
-      {
-        message: "Password do not match",
-        path: ["confirmPassword"],
-      });
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Password do not match",
+    path: ["confirmPassword"],
   });
