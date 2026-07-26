@@ -30,7 +30,7 @@ export const registerSchema = Joi.object({
 
 export const loginSchema = Joi.object({
   email: email,
-  password: password,
+  password: Joi.string().required(),
 });
 
 export const verifyAccountSchema = Joi.object({
