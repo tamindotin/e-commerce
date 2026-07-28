@@ -6,7 +6,7 @@ const auth = asyncHandler((req, res, next) => {
 
   if (!token) {
     const error = new Error("Unauthenticated user. ");
-    error.status = 403;
+    error.status = 401;
     throw error;
   }
 

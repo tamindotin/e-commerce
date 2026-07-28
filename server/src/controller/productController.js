@@ -251,7 +251,7 @@ export const getProducts = asyncHandler(async (req, res) => {
 
   const [totalProducts, products] = await Promise.all([
     Product.countDocuments(filters),
-    Product.find(filters).sort(sort).skip(skip).limit(limit).lean(),
+    Product.find(filters).populate("category").sort(sort).skip(skip).limit(limit).lean(),
   ]);
   const totalPages = Math.ceil(totalProducts / limit);
 
