@@ -48,7 +48,7 @@ export function TagInput({ tags, onChange }) {
           }}
           onBlur={commit}
           placeholder={tags.length === 0 ? "Type a tag and press enter" : ""}
-          className="min-w-[100px] flex-1 border-0 bg-transparent p-1 text-sm outline-none placeholder:text-muted-foreground"
+          className="min-w-25 flex-1 border-0 bg-transparent p-1 text-sm outline-none placeholder:text-muted-foreground"
         />
       </div>
       <p className="mt-1 text-xs text-muted-foreground">
